@@ -124,7 +124,7 @@ for ((i = ${start}; i < ${end}; i += ${step})); do
   #accel-config config-wq dsa0/wq0.0 --group-id=0 --wq-size=32 --priority=1 --block-on-fault=0 --type=user --name=swq --mode=dedicated --max-batch-size=512 --max-transfer-size=134217728
   
   # Extended config.
-  accel-config config-wq dsa${i}/wq${i}.${j} -g 0 -s $wq_size -p 10 -m ${mode} -y user -n user${i} -t $wq_size -d user -x 1073741824 -b 1
+  accel-config config-wq dsa${i}/wq${i}.${j} -g 0 --wq-size=$wq_size -p 10 -m ${mode} -y user -n user${i} -t $wq_size -d user -x 1073741824 -b 1
  done
 
  # Enable device.
