@@ -48,11 +48,12 @@ int main() {
     size_t out_size = 0;
 
     // Create ScatterGather object
-    ScatterGather scatterGather;
+    ScatterGather scatterGather(DML_PATH_HW);
 
     // Measure the time taken to gather data
     auto start = std::chrono::high_resolution_clock::now();
-    scatterGather.gather_data(gather_schema, dest_buffer, &out_size);
+    //scatterGather.gather_data(gather_schema, dest_buffer, &out_size);
+    scatterGather.GatherWithMemCpy(gather_schema, dest_buffer, &out_size);
     auto end = std::chrono::high_resolution_clock::now();
 
     // Calculate the duration
