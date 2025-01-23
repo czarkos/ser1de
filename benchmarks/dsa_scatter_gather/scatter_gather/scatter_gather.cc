@@ -35,7 +35,7 @@ void ScatterGather::cleanup_dml_job() {
     free(job);
 }
 
-void ScatterGather::gather_data(Schema& schema, void *out, size_t* out_size) {
+void ScatterGather::dsa_gather_blocking(Schema& schema, void *out, size_t* out_size) {
     dml_status_t status;            // DML operation status
     size_t offset = 0;              // Offset in the destination buffer
     size_t num_tuples = schema.size(); // Number of tuples to gather
@@ -44,10 +44,9 @@ void ScatterGather::gather_data(Schema& schema, void *out, size_t* out_size) {
         // Configure the memory move operation
         job->operation = DML_OP_MEM_MOVE;
         job->source_first_ptr = std::get<0>(schema[i]); // Pointer from the tuple
-        //job->source_first_ptr = tuples[i].ptr; // Pointer from the tuple
         job->destination_first_ptr = static_cast<uint8_t*>(out) + offset;
         job->source_length = std::get<1>(schema[i]); // Size from the tuple
-        //job->source_length = tuples[i].size;
+        job->flags = DML_FLAG_PREFETCH_CACHE; // Use prefetch cache flag
 
         // Execute the operation
         status = dml_execute_job(job, DML_WAIT_MODE_BUSY_POLL);
@@ -60,6 +59,30 @@ void ScatterGather::gather_data(Schema& schema, void *out, size_t* out_size) {
         //offset += tuples[i].size; // Advance the destination offset
     }
     *out_size = offset;
+}
+
+void ScatterGather::dsa_scatter_blocking(uint8_t* in, Schema& schema) {
+    dml_status_t status;            // DML operation status
+    size_t in_offset = 0;              // Offset in the destination buffer
+    size_t num_tuples = schema.size(); // Number of tuples to gather
+
+    for (size_t i = 0; i < num_tuples; ++i) {
+        // Configure the memory move operation
+        job->operation = DML_OP_MEM_MOVE;
+        job->source_first_ptr = static_cast<uint8_t*>(in) + in_offset;
+        job->destination_first_ptr = std::get<0>(schema[i]); // Pointer from the tuple
+        job->source_length = std::get<1>(schema[i]); // Size from the tuple
+        job->flags = DML_FLAG_PREFETCH_CACHE; // Use prefetch cache flag
+
+        // Execute the operation
+        status = dml_execute_job(job, DML_WAIT_MODE_BUSY_POLL);
+        if (status != DML_STATUS_OK) {
+            fprintf(stderr, "DML operation failed at tuple %zu with error code %u\n", i, status);
+            break;
+        }
+
+        in_offset += std::get<1>(schema[i]); // Advance the destination offset
+    }
 }
 
 int ScatterGather::GatherWithMemCpy(const Schema& schema, uint8_t* out, size_t* out_size) {

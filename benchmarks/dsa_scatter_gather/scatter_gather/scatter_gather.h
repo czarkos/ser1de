@@ -11,7 +11,9 @@ public:
     typedef std::vector<std::tuple<uint8_t*, size_t>> Schema;
     ScatterGather(dml_path_t execution_path);
     ~ScatterGather();
-    void gather_data(Schema& schema, void *out, size_t* out_size);
+    // TODO: check how to make the dsa versions of the functions api completely compatible with the original dsa api
+    void dsa_gather_blocking(Schema& schema, void *out, size_t* out_size);
+    void dsa_scatter_blocking(uint8_t* in, Schema& schema);
     // compatibility with older versions
     int GatherWithMemCpy(const Schema& schema, uint8_t* out, size_t* out_size);
     int ScatterWithMemCpy(const uint8_t* in, const Schema& schema);
