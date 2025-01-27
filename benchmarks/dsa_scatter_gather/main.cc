@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cassert>
 #include <cstring>
+#include <numeric>
 #include "scatter_gather/scatter_gather.h"
 
 const int NUM_ITERATIONS = 1000;
@@ -50,16 +51,16 @@ int main() {
     char str_data3_scatter[NUM_ITERATIONS][200];
     char str_data4_scatter[NUM_ITERATIONS][200];
 
-    long long total_duration_gather = 0;
-    long long total_duration_scatter = 0;
-    long long total_duration_schema_creation = 0;
-    size_t total_data_gathered = 0;
+    std::vector<long long> durations_gather;
+    std::vector<long long> durations_scatter;
+    std::vector<long long> durations_schema_creation;
 
     // Create ScatterGather object
     ScatterGather scatterGather(DML_PATH_HW);
 
+    // Loop for gather schema creation
+    std::vector<Schema> gather_schemas(NUM_ITERATIONS);
     for (int i = 0; i < NUM_ITERATIONS; ++i) {
-        // Create gather schema
         auto start_schema_creation = std::chrono::high_resolution_clock::now();
         Schema gather_schema;
         gather_schema.push_back(std::make_tuple(reinterpret_cast<uint8_t*>(int_data1[i]), sizeof(int_data1[i])));
@@ -70,21 +71,27 @@ int main() {
         gather_schema.push_back(std::make_tuple(reinterpret_cast<uint8_t*>(str_data2[i]), sizeof(str_data2[i])));
         gather_schema.push_back(std::make_tuple(reinterpret_cast<uint8_t*>(str_data3[i]), sizeof(str_data3[i])));
         gather_schema.push_back(std::make_tuple(reinterpret_cast<uint8_t*>(str_data4[i]), sizeof(str_data4[i])));
+        gather_schemas[i] = gather_schema;
         auto end_schema_creation = std::chrono::high_resolution_clock::now();
         auto duration_schema_creation = std::chrono::duration_cast<std::chrono::nanoseconds>(end_schema_creation - start_schema_creation).count();
-        total_duration_schema_creation += duration_schema_creation;
+        durations_schema_creation.push_back(duration_schema_creation);
+    }
 
-        // Measure the time taken to gather data
+    // Loop for gathering data
+    size_t out_size = 0;
+    for (int i = 0; i < NUM_ITERATIONS; ++i) {
         auto start_gather = std::chrono::high_resolution_clock::now();
-        size_t out_size = 0;
-        scatterGather.dsa_gather_blocking(gather_schema, dest_buffers[i], &out_size);
-        //scatterGather.GatherWithMemCpy(gather_schema, dest_buffers[i], &out_size);
+        scatterGather.dsa_gather_blocking(gather_schemas[i], dest_buffers[i], &out_size);
+        //scatterGather.GatherWithMemCpy(gather_schemas[i], dest_buffers[i], &out_size);
         auto end_gather = std::chrono::high_resolution_clock::now();
         auto duration_gather = std::chrono::duration_cast<std::chrono::nanoseconds>(end_gather - start_gather).count();
-        total_duration_gather += duration_gather;
-        total_data_gathered += out_size;
+        durations_gather.push_back(duration_gather);
+    }
 
-        // Create scatter schema
+    // Loop for scatter schema creation
+    std::vector<Schema> scatter_schemas(NUM_ITERATIONS);
+    for (int i = 0; i < NUM_ITERATIONS; ++i) {
+        auto start_schema_creation = std::chrono::high_resolution_clock::now();
         Schema scatter_schema;
         scatter_schema.push_back(std::make_tuple(reinterpret_cast<uint8_t*>(int_data1_scatter[i]), sizeof(int_data1_scatter[i])));
         scatter_schema.push_back(std::make_tuple(reinterpret_cast<uint8_t*>(int_data2_scatter[i]), sizeof(int_data2_scatter[i])));
@@ -94,14 +101,20 @@ int main() {
         scatter_schema.push_back(std::make_tuple(reinterpret_cast<uint8_t*>(str_data2_scatter[i]), sizeof(str_data2_scatter[i])));
         scatter_schema.push_back(std::make_tuple(reinterpret_cast<uint8_t*>(str_data3_scatter[i]), sizeof(str_data3_scatter[i])));
         scatter_schema.push_back(std::make_tuple(reinterpret_cast<uint8_t*>(str_data4_scatter[i]), sizeof(str_data4_scatter[i])));
+        scatter_schemas[i] = scatter_schema;
+        auto end_schema_creation = std::chrono::high_resolution_clock::now();
+        auto duration_schema_creation = std::chrono::duration_cast<std::chrono::nanoseconds>(end_schema_creation - start_schema_creation).count();
+        durations_schema_creation.push_back(duration_schema_creation);
+    }
 
-        // Measure the time taken to scatter data
+    // Loop for scattering data
+    for (int i = 0; i < NUM_ITERATIONS; ++i) {
         auto start_scatter = std::chrono::high_resolution_clock::now();
-        //scatterGather.ScatterWithMemCpy(dest_buffers[i], scatter_schema);
-        scatterGather.dsa_scatter_blocking(dest_buffers[i], scatter_schema);
+        scatterGather.dsa_scatter_blocking(dest_buffers[i], scatter_schemas[i]);
+        //scatterGather.ScatterWithMemCpy(dest_buffers[i], scatter_schemas[i]);
         auto end_scatter = std::chrono::high_resolution_clock::now();
         auto duration_scatter = std::chrono::duration_cast<std::chrono::nanoseconds>(end_scatter - start_scatter).count();
-        total_duration_scatter += duration_scatter;
+        durations_scatter.push_back(duration_scatter);
 
         // Verify the scattered data
         assert(memcmp(int_data1[i], int_data1_scatter[i], sizeof(int_data1[i])) == 0);
@@ -110,8 +123,8 @@ int main() {
         assert(memcmp(int_data4[i], int_data4_scatter[i], sizeof(int_data4[i])) == 0);
         assert(memcmp(str_data1[i], str_data1_scatter[i], sizeof(str_data1[i])) == 0);
         assert(memcmp(str_data2[i], str_data2_scatter[i], sizeof(str_data2[i])) == 0);
-        assert(memcmp(str_data3[i], str_data3_scatter[i], sizeof(str_data3[i])) == 0);
-        assert(memcmp(str_data4[i], str_data4_scatter[i], sizeof(str_data4[i])) == 0);
+        assert(memcmp(str_data3[i], str_data3_scatter[i], sizeof(str_data3_scatter[i])) == 0);
+        assert(memcmp(str_data4[i], str_data4_scatter[i], sizeof(str_data4_scatter[i])) == 0);
     }
 
     // Clean up
@@ -119,14 +132,15 @@ int main() {
         delete[] dest_buffers[i];
     }
 
-    long long average_duration_gather = total_duration_gather / NUM_ITERATIONS;
-    long long average_duration_scatter = total_duration_scatter / NUM_ITERATIONS;
-    long long average_duration_schema_creation = total_duration_schema_creation / NUM_ITERATIONS;
+    // Calculate averages
+    long long average_duration_gather = std::accumulate(durations_gather.begin(), durations_gather.end(), 0LL) / NUM_ITERATIONS;
+    long long average_duration_scatter = std::accumulate(durations_scatter.begin(), durations_scatter.end(), 0LL) / NUM_ITERATIONS;
+    long long average_duration_schema_creation = std::accumulate(durations_schema_creation.begin(), durations_schema_creation.end(), 0LL) / (2 * NUM_ITERATIONS); // Dividing by 2 * NUM_ITERATIONS because schema creation is measured twice
 
     std::cout << "Average time taken to create schema: " << average_duration_schema_creation << " nanoseconds" << std::endl;
     std::cout << "Average time taken to gather data: " << average_duration_gather << " nanoseconds" << std::endl;
     std::cout << "Average time taken to scatter data: " << average_duration_scatter << " nanoseconds" << std::endl;
-    std::cout << "Data gathered per iteration: " << total_data_gathered / NUM_ITERATIONS << " bytes" << std::endl;
+    std::cout << "Data gathered per iteration: " << out_size << " bytes" << std::endl;
 
     std::cout << "Data gathered and scattered successfully!" << std::endl;
 
