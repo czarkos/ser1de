@@ -242,7 +242,7 @@ void ScatterGather::dsa_scatter_non_blocking(uint8_t* in, Schema& schema) {
 
 void ScatterGather::wait_for_all_jobs() {
     for (auto job : jobs) {
-        dml_status_t status = dml_wait_job(job, DML_WAIT_MODE_UMWAIT);
+        dml_status_t status = dml_wait_job(job, DML_WAIT_MODE_BUSY_POLL);
         if (status != DML_STATUS_OK) {
             fprintf(stderr, "DML wait operation failed with error code %u\n", status);
         }
