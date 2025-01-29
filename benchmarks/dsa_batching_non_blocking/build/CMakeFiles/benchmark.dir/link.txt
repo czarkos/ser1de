@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/benchmark.dir/main.cc.o CMakeFiles/benchmark.dir/scatter_gather/scatter_gather.cc.o -o benchmark   -L/home/christos/dml_install_dir/lib  -Wl,-rpath,/home/christos/dml_install_dir/lib -ldml 

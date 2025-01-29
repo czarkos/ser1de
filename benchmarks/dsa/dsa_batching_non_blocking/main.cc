@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstring>
 #include <numeric>
+#include <immintrin.h> // Include for _mm_cldemote
 #include "scatter_gather/scatter_gather.h"
 
 const int NUM_ITERATIONS = 1000;
@@ -85,8 +86,8 @@ int main() {
         //scatterGather.dsa_gather_blocking(gather_schemas[i], dest_buffers[i], &out_size);
         //scatterGather.dsa_gather_blocking_batching(gather_schemas[i], dest_buffers[i], &out_size);
         //scatterGather.dsa_gather_non_blocking(gather_schemas[i], dest_buffers[i], &out_size);
-        scatterGather.dsa_gather_non_blocking_batching(gather_schemas[i], dest_buffers[i], &out_size);
-        //scatterGather.GatherWithMemCpy(gather_schemas[i], dest_buffers[i], &out_size);
+        //scatterGather.dsa_gather_non_blocking_batching(gather_schemas[i], dest_buffers[i], &out_size);
+        scatterGather.GatherWithMemCpy(gather_schemas[i], dest_buffers[i], &out_size);
         auto end_gather = std::chrono::high_resolution_clock::now();
         auto duration_gather = std::chrono::duration_cast<std::chrono::nanoseconds>(end_gather - start_gather).count();
         durations_gather.push_back(duration_gather);
@@ -119,17 +120,17 @@ int main() {
     auto total_start_scatter = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < NUM_ITERATIONS; ++i) {
         auto start_scatter = std::chrono::high_resolution_clock::now();
-        //scatterGather.dsa_scatter_blocking(dest_buffers[i], scatter_schemas[i]);
+        scatterGather.dsa_scatter_blocking(dest_buffers[i], scatter_schemas[i]);
         //scatterGather.dsa_scatter_blocking_batching(dest_buffers[i], scatter_schemas[i]);
         //scatterGather.dsa_scatter_non_blocking(dest_buffers[i], scatter_schemas[i]);
-        scatterGather.dsa_scatter_non_blocking_batching(dest_buffers[i], scatter_schemas[i]);
+        //scatterGather.dsa_scatter_non_blocking_batching(dest_buffers[i], scatter_schemas[i]);
         //scatterGather.ScatterWithMemCpy(dest_buffers[i], scatter_schemas[i]);
         auto end_scatter = std::chrono::high_resolution_clock::now();
         auto duration_scatter = std::chrono::duration_cast<std::chrono::nanoseconds>(end_scatter - start_scatter).count();
         durations_scatter.push_back(duration_scatter);
     }
     //scatterGather.wait_for_all_jobs();
-    scatterGather.wait_for_all_batch_jobs();
+    //scatterGather.wait_for_all_batch_jobs();
     auto total_end_scatter = std::chrono::high_resolution_clock::now();
     auto total_duration_scatter = std::chrono::duration_cast<std::chrono::nanoseconds>(total_end_scatter - total_start_scatter).count();
 
