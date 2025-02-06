@@ -7,7 +7,7 @@
 
 static constexpr size_t kNofIterations = 1001;
 
-#define BUFFER_SIZE 5096
+#define BUFFER_SIZE 2*4096
 
 void report_timings(std::vector<std::chrono::nanoseconds> perfs, std::string stat) {
     std::cout << stat << "(ns)";
@@ -104,10 +104,10 @@ inline void benchmark_gather(ScatterGather& scagatherer, std::vector<ScatterGath
     begin = std::chrono::steady_clock::now();
     for (size_t i = 0; i < kNofIterations; ++i) {
         if (dsa) {
-            scagatherer.dsa_gather_blocking_batching(gather_schemas[i], gather_outs[0].data(), &out_size);
+            scagatherer.dsa_gather_blocking_batching(gather_schemas[i], gather_outs[i].data(), &out_size);
         }
         else {
-            scagatherer.GatherWithMemCpy(gather_schemas[i], gather_outs[0].data(), &out_size);
+            scagatherer.GatherWithMemCpy(gather_schemas[i], gather_outs[i].data(), &out_size);
         }
         //scagatherer.dsa_gather_blocking(gather_schemas[i], gather_outs[0].data(), &out_size);
     }
@@ -128,10 +128,10 @@ inline void benchmark_scatter(ScatterGather& scagatherer, std::vector<ScatterGat
     for (size_t i = 0; i < kNofIterations; ++i) {
          if (dsa) {
             //scagatherer.dsa_scatter_non_blocking(gather_outs[i].data(), scatter_schemas[i]);
-            scagatherer.dsa_scatter_blocking_batching(gather_outs[0].data(), scatter_schemas[i]);
+            scagatherer.dsa_scatter_blocking_batching(gather_outs[i].data(), scatter_schemas[i]);
          }
          else {
-            scagatherer.ScatterWithMemCpy(gather_outs[0].data(), scatter_schemas[i]);
+            scagatherer.ScatterWithMemCpy(gather_outs[i].data(), scatter_schemas[i]);
          }
          //scagatherer.ScatterWithMemCpy(decompressed[0], scatter_schemas[i]);
          //scagatherer.dsa_scatter_non_blocking(decompressed[0], scatter_schemas[i]);
@@ -149,7 +149,7 @@ inline void benchmark_compress(IAAComp& iaa_comp, std::vector<std::vector<uint8_
 
     for (size_t i = 0; i < kNofIterations; ++i) {
         begin = std::chrono::steady_clock::now();
-        iaa_comp.compress_blocking(gather_outs[0].data(), gather_outs[0].size(), compressed[0].get(), gather_outs[i].size()+1024, &comprOutputSize[0]);
+        iaa_comp.compress_blocking(gather_outs[i].data(), gather_outs[i].size(), compressed[i].get(), BUFFER_SIZE, &comprOutputSize[i]);
         //iaa_comp.compress_blocking(gather_outs[0].data(), gather_outs[0].size(), compressed[i].get(), gather_outs[0].size()+1024, &comprOutputSize[i]);
         end = std::chrono::steady_clock::now();
 
@@ -166,7 +166,7 @@ inline void benchmark_decompress(IAAComp& iaa_comp, std::vector<std::unique_ptr<
 
     for (size_t i = 0; i < kNofIterations; ++i) {
         begin = std::chrono::steady_clock::now();
-        iaa_comp.decompress_blocking(compressed[0].get(), comprOutputSize[0], gather_outs[i].data(), gather_outs[i].size(), &decomprOutputSize[i]);
+        iaa_comp.decompress_blocking(compressed[i].get(), comprOutputSize[i], gather_outs[i].data(), gather_outs[i].size(), &decomprOutputSize[i]);
         //iaa_comp.decompress_blocking(compressed[i].get(), comprOutputSize[i], gather_outs[0].data(), gather_outs[0].size()+1024, &decomprOutputSize[i]);
         end = std::chrono::steady_clock::now();
 
