@@ -70,5 +70,6 @@ set(protobuf_ABSL_USED_TARGETS
     absl::variant
 )
 
-add_executable(test src/proto_init_src.cc src/test_main.cc exp/stubs/exp/person.pb.cc src/scatter_gather/scatter_gather.cc)
+add_executable(test src/proto_init_src.cc src/benchmark.cc exp/stubs/exp/person.pb.cc)
+#add_executable(test src/proto_init_src.cc src/test_main.cc exp/stubs/exp/person.pb.cc src/scatter_gather/scatter_gather.cc)
 target_link_libraries(test protobuf ${protobuf_ABSL_USED_TARGETS} utf8_validity qpl dml)

@@ -2,19 +2,71 @@
 #include <cstdio>
 #include <cstring>
 #include <stdlib.h>
+#include <assert.h>
 
 ScatterGather::ScatterGather(dml_path_t execution_path, size_t num_jobs) : num_jobs(num_jobs), current_job_index(0) {
     //jobs.resize(num_jobs);
+    batch_size = 8;
+    num_batch_jobs = 50;
     initialize_dml_jobs(execution_path);
+    initialize_dml_batch_jobs(execution_path);
 }
 
 ScatterGather::~ScatterGather() {
     cleanup_dml_jobs();
+    cleanup_dml_batch_jobs();
+}
+
+dml_status_t ScatterGather::initialize_dml_batch_jobs(dml_path_t execution_path) {
+    uint32_t size = 0u;
+    dml_status_t status;
+
+    for (size_t i = 0; i < num_batch_jobs; ++i) {
+        uint8_t* batch_buffer;
+        uint32_t batch_buffer_length;
+
+        // initialize batch job
+        status = dml_get_job_size(execution_path, &size);
+        if (DML_STATUS_OK != status) {
+            fprintf(stderr, "An error (%u) occurred during getting job size.\n", status);
+            break;
+        }
+
+        dml_job_t* batch_job = (dml_job_t *)malloc(size);
+        status = dml_init_job(execution_path, batch_job);
+        if (status != DML_STATUS_OK) {
+            fprintf(stderr, "Failed to create DML job with code %d\n", status);
+            break;
+        }
+        
+        status = dml_get_batch_size(batch_job, batch_size, &batch_buffer_length);
+        if (status != DML_STATUS_OK) {
+            fprintf(stderr, "An error occured during getting batch size with code %d\n", status);
+            break;
+        }
+
+        batch_buffer = (uint8_t *)malloc(batch_buffer_length);
+
+        //fprintf(stderr, "Batch buffer length: %u\n", batch_buffer_length);
+        //fprintf(stderr, "Batch size: %lu\n", batch_size);
+
+        batch_job->operation = DML_OP_BATCH;
+        batch_job->destination_first_ptr = batch_buffer;
+        batch_job->destination_length = batch_buffer_length;
+
+        batch_jobs.push_back(batch_job);
+        batch_buffers.push_back(batch_buffer);
+        batch_buffer_lengths.push_back(batch_buffer_length);
+    }
+
+    return status;
 }
 
 dml_status_t ScatterGather::initialize_dml_jobs(dml_path_t execution_path) {
     uint32_t size = 0u;
     dml_status_t status;
+
+    // initialize simple jobs
     for (size_t i = 0; i < num_jobs; ++i) {
         status = dml_get_job_size(execution_path, &size);
         if (DML_STATUS_OK != status) {
@@ -30,7 +82,18 @@ dml_status_t ScatterGather::initialize_dml_jobs(dml_path_t execution_path) {
         }
         jobs.push_back(job);
     }
+
     return status;
+}
+
+void ScatterGather::cleanup_dml_batch_jobs() {
+    for (auto batch_job : batch_jobs) {
+        dml_status_t status = dml_finalize_job(batch_job);
+        if (DML_STATUS_OK != status) {
+            printf("An error (%u) occurred during job finalization.\n", status);
+        }
+        free(batch_job);
+    }
 }
 
 void ScatterGather::cleanup_dml_jobs() {
@@ -46,6 +109,13 @@ void ScatterGather::cleanup_dml_jobs() {
 dml_job_t* ScatterGather::get_next_job() {
     dml_job_t* job = jobs[current_job_index];
     current_job_index = (current_job_index + 1) % num_jobs;
+    return job;
+}
+
+dml_job_t* ScatterGather::get_next_batch_job() {
+    dml_job_t* job = jobs[current_batch_job_index];
+    //fprintf(stderr, "current_batch_job_index: %lu\n", current_batch_job_index);
+    current_batch_job_index = (current_batch_job_index + 1) % num_batch_jobs;
     return job;
 }
 
@@ -73,29 +143,6 @@ void ScatterGather::dsa_gather_blocking(Schema& schema, void *out, size_t* out_s
     *out_size = offset;
 }
 
-void ScatterGather::dsa_scatter_blocking(uint8_t* in, Schema& schema) {
-    dml_status_t status;
-    size_t in_offset = 0;
-    size_t num_tuples = schema.size();
-
-    for (size_t i = 0; i < num_tuples; ++i) {
-        dml_job_t* job = get_next_job();
-        job->operation = DML_OP_MEM_MOVE;
-        job->source_first_ptr = static_cast<uint8_t*>(in) + in_offset;
-        job->destination_first_ptr = std::get<0>(schema[i]);
-        job->source_length = std::get<1>(schema[i]);
-        job->flags = DML_FLAG_PREFETCH_CACHE;
-
-        status = dml_execute_job(job, DML_WAIT_MODE_BUSY_POLL);
-        if (status != DML_STATUS_OK) {
-            fprintf(stderr, "DML operation failed at tuple %zu with error code %u\n", i, status);
-            break;
-        }
-
-        in_offset += std::get<1>(schema[i]);
-    }
-}
-
 void ScatterGather::dsa_gather_non_blocking(Schema& schema, void *out, size_t* out_size) {
     dml_status_t status;
     size_t offset = 0;
@@ -120,6 +167,90 @@ void ScatterGather::dsa_gather_non_blocking(Schema& schema, void *out, size_t* o
     *out_size = offset;
 }
 
+
+void ScatterGather::dsa_gather_blocking_batching(Schema& schema, void *out, size_t* out_size) {
+    dml_status_t status;
+    size_t offset = 0;
+    size_t num_tuples = schema.size();
+
+    size_t num_batches = num_tuples / batch_size;
+
+    for (size_t i = 0; i < num_batches; ++i) {
+        dml_job_t* batch_job = get_next_batch_job();
+        batch_job->operation = DML_OP_BATCH;
+        batch_job->destination_first_ptr = batch_buffers[current_batch_job_index];
+        batch_job->destination_length = batch_buffer_lengths[current_batch_job_index];
+        for (size_t j = 0; j < batch_size; ++j) {
+            size_t index = i * batch_size + j;
+            dml_batch_set_mem_move_by_index(batch_job, j, std::get<0>(schema[index]), static_cast<uint8_t*>(out) + offset, std::get<1>(schema[index]), DML_FLAG_PREFETCH_CACHE);
+            offset += std::get<1>(schema[index]);
+        }
+        // make only the last job be blocking
+        if (i == num_batches -1)
+            status = dml_execute_job(batch_job, DML_WAIT_MODE_BUSY_POLL);
+        else
+            status = dml_submit_job(batch_job);
+        if (status != DML_STATUS_OK) {
+            fprintf(stderr, "DML operation failed at tuple %zu with error code %u\n", i, status);
+            break;
+        }
+    }
+    *out_size = offset;
+}
+
+void ScatterGather::dsa_gather_non_blocking_batching(Schema& schema, void *out, size_t* out_size) {
+    dml_status_t status;
+    size_t offset = 0;
+    size_t num_tuples = schema.size();
+
+    size_t num_batches = num_tuples / batch_size;
+
+    for (size_t i = 0; i < num_batches; ++i) {
+        dml_job_t* batch_job = get_next_batch_job();
+        batch_job->operation = DML_OP_BATCH;
+        batch_job->destination_first_ptr = batch_buffers[current_batch_job_index];
+        batch_job->destination_length = batch_buffer_lengths[current_batch_job_index];
+        for (size_t j = 0; j < batch_size; ++j) {
+            size_t index = i * batch_size + j;
+            dml_batch_set_mem_move_by_index(batch_job, j, std::get<0>(schema[index]), static_cast<uint8_t*>(out) + offset, std::get<1>(schema[index]), DML_FLAG_PREFETCH_CACHE);
+            offset += std::get<1>(schema[index]);
+        }
+        // make only the last job be blocking
+        //if (i == num_batches -1)
+        //    status = dml_execute_job(batch_job, DML_WAIT_MODE_BUSY_POLL);
+        //else
+        status = dml_submit_job(batch_job);
+        if (status != DML_STATUS_OK) {
+            fprintf(stderr, "DML operation failed at tuple %zu with error code %u\n", i, status);
+            break;
+        }
+    }
+    *out_size = offset;
+}
+
+void ScatterGather::dsa_scatter_blocking(uint8_t* in, Schema& schema) {
+    dml_status_t status;
+    size_t in_offset = 0;
+    size_t num_tuples = schema.size();
+
+    for (size_t i = 0; i < num_tuples; ++i) {
+        dml_job_t* job = get_next_job();
+        job->operation = DML_OP_MEM_MOVE;
+        job->source_first_ptr = static_cast<uint8_t*>(in) + in_offset;
+        job->destination_first_ptr = std::get<0>(schema[i]);
+        job->source_length = std::get<1>(schema[i]);
+        job->flags = DML_FLAG_PREFETCH_CACHE;
+
+        status = dml_execute_job(job, DML_WAIT_MODE_BUSY_POLL);
+        if (status != DML_STATUS_OK) {
+            fprintf(stderr, "DML operation failed at tuple %zu with error code %u\n", i, status);
+            break;
+        }
+
+        in_offset += std::get<1>(schema[i]);
+    }
+}
+
 void ScatterGather::dsa_scatter_non_blocking(uint8_t* in, Schema& schema) {
     dml_status_t status;
     size_t in_offset = 0;
@@ -140,6 +271,89 @@ void ScatterGather::dsa_scatter_non_blocking(uint8_t* in, Schema& schema) {
         }
 
         in_offset += std::get<1>(schema[i]);
+    }
+}
+
+void ScatterGather::dsa_scatter_blocking_batching(uint8_t* in, Schema& schema) {
+    dml_status_t status;
+    size_t in_offset = 0;
+    size_t num_tuples = schema.size();
+
+    size_t num_batches = num_tuples / batch_size;
+
+    for (size_t i = 0; i < num_batches; ++i) {
+        dml_job_t* batch_job = get_next_batch_job();
+        batch_job->operation = DML_OP_BATCH;
+        batch_job->destination_first_ptr = batch_buffers[current_batch_job_index];
+        batch_job->destination_length = batch_buffer_lengths[current_batch_job_index];
+        for (size_t j = 0; j < batch_size; ++j) {
+            size_t index = i * batch_size + j;
+            dml_batch_set_mem_move_by_index(batch_job, j, static_cast<uint8_t*>(in) + in_offset, std::get<0>(schema[index]), std::get<1>(schema[index]), DML_FLAG_PREFETCH_CACHE);
+            in_offset += std::get<1>(schema[index]);
+        }
+        // make only the last job be blocking
+        if (i == num_batches -1)
+            status = dml_execute_job(batch_job, DML_WAIT_MODE_BUSY_POLL);
+        else
+            status = dml_submit_job(batch_job);
+
+        if (status != DML_STATUS_OK) {
+            fprintf(stderr, "DML operation failed at tuple %zu with error code %u\n", i, status);
+            break;
+        }
+    }
+}
+
+void ScatterGather::dsa_scatter_non_blocking_batching(uint8_t* in, Schema& schema) {
+    dml_status_t status;
+    size_t in_offset = 0;
+    size_t num_tuples = schema.size();
+
+    size_t num_batches = num_tuples / batch_size;
+
+    for (size_t i = 0; i < num_batches; ++i) {
+        dml_job_t* batch_job = get_next_batch_job();
+        batch_job->operation = DML_OP_BATCH;
+        batch_job->destination_first_ptr = batch_buffers[current_batch_job_index];
+        batch_job->destination_length = batch_buffer_lengths[current_batch_job_index];
+        for (size_t j = 0; j < batch_size; ++j) {
+            size_t index = i * batch_size + j;
+            dml_batch_set_mem_move_by_index(batch_job, j, static_cast<uint8_t*>(in) + in_offset, std::get<0>(schema[index]), std::get<1>(schema[index]), DML_FLAG_PREFETCH_CACHE);
+            in_offset += std::get<1>(schema[index]);
+        }
+        //// make only the last job be blocking
+        //if (i == num_batches -1)
+        //    status = dml_execute_job(batch_job, DML_WAIT_MODE_BUSY_POLL);
+        //else
+        status = dml_submit_job(batch_job);
+        if (status != DML_STATUS_OK) {
+            fprintf(stderr, "DML operation failed at tuple %zu with error code %u\n", i, status);
+            break;
+        }
+    }
+}
+
+/*
+void ScatterGather::wait_for_all_batch_jobs() {
+    for (size_t i = 0; i < num_batch_jobs; ++i) {
+        assert(batch_jobs[i] != nullptr);
+        assert(batch_jobs[i]->operation == DML_OP_BATCH);
+        assert(batch_jobs[i]->source_first_ptr != batch_buffers[i]);
+        fprintf(stderr, "Waiting for batch job %lu\n", i);
+        while(dml_check_job(batch_jobs[i]) == DML_STATUS_BEING_PROCESSED) {
+            // Do nothing
+            fprintf(stderr, "Waiting for batch job %lu\n", i);
+        };
+    }
+}
+*/
+
+void ScatterGather::wait_for_all_batch_jobs() {
+    for (auto job : batch_jobs) {
+        dml_status_t status = dml_wait_job(job, DML_WAIT_MODE_BUSY_POLL);
+        if (status != DML_STATUS_OK) {
+            fprintf(stderr, "DML wait operation failed with error code %u\n", status);
+        }
     }
 }
 

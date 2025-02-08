@@ -172,13 +172,13 @@ def dsa_sensitivity_plot(df, name):
 def gather_plot(df, name):
     # Calculate required sums for each plot line
     #df['dsa_gather'] = df['dsa_gather'] + df['dsa_scatter']
-    #df['memcpy_gather'] = df['memcpy_gather'] + df['memcpy_scatter']
+    df['memcpy_and_gather'] = df['memcpy_gather'] + df['gather_schema']
 
     print(df)
 
     # Create a pivot table for the plots
     plot_data = df.pivot_table(index=['gather_out(bytes)', 'width', 'depth'], 
-                               values=['dsa_gather', 'memcpy_gather', 'gather_schema'],
+                               values=['dsa_gather', 'memcpy_gather', 'gather_schema', 'memcpy_and_gather'],
                                aggfunc='sum').reset_index()
 
     # Get unique dimensions for subplots
@@ -198,7 +198,8 @@ def gather_plot(df, name):
             # Plot each line
             ax.plot(subset['gather_out(bytes)'], subset['dsa_gather'], label='dsa gather (hw)', linewidth=2, marker='o', color='red')
             ax.plot(subset['gather_out(bytes)'], subset['memcpy_gather'], label='memcpy gather (sw)', linewidth=2, marker='o', color='blue')
-            ax.plot(subset['gather_out(bytes)'], subset['gather_schema'], label='gather', linewidth=2, marker='o', color='green')
+            ax.plot(subset['gather_out(bytes)'], subset['gather_schema'], label='gather schema creation', linewidth=2, marker='o', color='green')
+            ax.plot(subset['gather_out(bytes)'], subset['memcpy_and_gather'], label='sw schema creation and gather', linewidth=2, marker='o', color='purple')
 
             ax.set_title(f'Width {width}, Depth {depth}')
             ax.set_xlabel('Total Message Size (bytes)')
@@ -207,7 +208,7 @@ def gather_plot(df, name):
 
             # Set independent axes limits
             ax.set_xlim(left=0.9*subset['gather_out(bytes)'].min(), right=1.1*subset['gather_out(bytes)'].max())
-            ax.set_ylim(bottom=0, top=max(subset['dsa_gather'].max(), subset['memcpy_gather'].max(), subset['gather_schema'].max())*1.1)
+            ax.set_ylim(bottom=0, top=max(subset['dsa_gather'].max(), subset['memcpy_gather'].max(), subset['gather_schema'].max(), subset['memcpy_and_gather'].max())*1.1)
 
             # Move the legend to the top right subplot
             if depth == depths.min() and width == widths.max():
@@ -309,6 +310,6 @@ if args.plot:
     #dist_plot(data_frame, plt_dir + '/time_distribution_plot.png')
     #ser_perf_plot(data_frame, plt_dir + '/perf_serialization.png')
     #deser_perf_plot(data_frame, plt_dir + '/perf_deserialization.png')
+    data_frame.to_csv(plt_dir + '/dsa_sensitivity.csv', index=False)  # Save without the index
     dsa_sensitivity_plot(data_frame, plt_dir + '/dsa_sensitivity.png')
     gather_plot(data_frame, plt_dir + '/gather_comparison.png')
-    data_frame.to_csv(plt_dir + '/dsa_sensitivity.csv', index=False)  # Save without the index

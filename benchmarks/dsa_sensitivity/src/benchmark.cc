@@ -1,13 +1,13 @@
 #include <google/protobuf/util/message_differencer.h>
 
 #include"person.pb.h"
-#include"scatter_gather/scatter_gather.h"
 #include"proto_init.h"
 #include"iaa_comp.h"
+#include"scatter_gather.h"
 
 static constexpr size_t kNofIterations = 1001;
 
-#define BUFFER_SIZE 8*4096
+#define BUFFER_SIZE 16*4096
 
 void report_timings(std::vector<std::chrono::nanoseconds> perfs, std::string stat) {
     std::cout << stat << "(ns)";
@@ -66,8 +66,8 @@ inline void benchmark_create_gather_schema(std::vector<M>& messages, std::vector
         begin = std::chrono::steady_clock::now();
         // <------------ GATHER SCHEMA ------>
 		messages[i].generate_schema(gather_schema);
-		messages[i].generate_scatter_sizes(sizes);
         end = std::chrono::steady_clock::now();
+		messages[i].generate_scatter_sizes(sizes);
         gather_schemas.push_back(gather_schema);
         sizes_for_scatter.push_back(sizes);
 
@@ -104,15 +104,15 @@ inline void benchmark_gather(ScatterGather& scagatherer, std::vector<ScatterGath
     begin = std::chrono::steady_clock::now();
     for (size_t i = 0; i < kNofIterations; ++i) {
         if (dsa) {
-        scagatherer.dsa_gather_non_blocking(gather_schemas[i], gather_outs[i].data(), &out_size);
+            scagatherer.dsa_gather_blocking_batching(gather_schemas[i], gather_outs[0].data(), &out_size);
         }
         else {
-        scagatherer.GatherWithMemCpy(gather_schemas[i], gather_outs[i].data(), &out_size);
+            scagatherer.GatherWithMemCpy(gather_schemas[i], gather_outs[0].data(), &out_size);
         }
         //scagatherer.dsa_gather_blocking(gather_schemas[i], gather_outs[0].data(), &out_size);
     }
     if (dsa)
-        scagatherer.wait_for_all_jobs();
+        scagatherer.wait_for_all_batch_jobs();
     end = std::chrono::steady_clock::now();
     duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin) / kNofIterations;
     gather_durations.push_back(duration);
@@ -127,7 +127,8 @@ inline void benchmark_scatter(ScatterGather& scagatherer, std::vector<ScatterGat
     begin = std::chrono::steady_clock::now();
     for (size_t i = 0; i < kNofIterations; ++i) {
          if (dsa) {
-            scagatherer.dsa_scatter_non_blocking(gather_outs[i].data(), scatter_schemas[i]);
+            //scagatherer.dsa_scatter_non_blocking(gather_outs[i].data(), scatter_schemas[i]);
+            scagatherer.dsa_scatter_blocking_batching(gather_outs[i].data(), scatter_schemas[i]);
          }
          else {
             scagatherer.ScatterWithMemCpy(gather_outs[i].data(), scatter_schemas[i]);
@@ -136,7 +137,7 @@ inline void benchmark_scatter(ScatterGather& scagatherer, std::vector<ScatterGat
          //scagatherer.dsa_scatter_non_blocking(decompressed[0], scatter_schemas[i]);
     }
     if (dsa)
-        scagatherer.wait_for_all_jobs();
+        scagatherer.wait_for_all_batch_jobs();
     end = std::chrono::steady_clock::now();
     duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin) / kNofIterations;
     scatter_durations.push_back(duration);
