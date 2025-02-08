@@ -92,7 +92,8 @@ class NestedMessageGenerator:
                     ctx = gen(ctx, level + 1, msg_name + f'->mutable_f{num_lines + 1 + i}()')
             return ctx
 
-        return gen("", 1, '(&out_messages[i])')
+        #return gen("", 1, '(&out_messages[i])')
+        return gen("", 1, '(&m)')
 
     @staticmethod
     def generate_gather_schema(num_lines, nestness_depth, nestness_width):
