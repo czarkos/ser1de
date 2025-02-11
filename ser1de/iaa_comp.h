@@ -80,10 +80,11 @@ public:
         }
     }
 
-    std::pair<int, int> compress_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size) {
-        while (queues[current_queue].jobs.size() >= max_jobs_per_queue) {
-            // Busy-wait loop
-        }
+    //std::pair<int, int> compress_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size) {
+    std::pair<int, int> compress_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size, uint32_t* actualOutSize) {
+        //while (queues[current_queue].jobs.size() >= max_jobs_per_queue) {
+        //    // Busy-wait loop
+        //}
 
         qpl_job* job = queues[current_queue].jobs.back();
         job->op = qpl_op_compress;
@@ -104,6 +105,7 @@ public:
         int job_index = queues[current_queue].jobs.size() - 1;
         current_queue = (current_queue + 1) % num_queues;
 
+        *actualOutSize = job->total_out;
         return {queue_index, job_index};
     }
 
@@ -134,10 +136,10 @@ public:
         return {queue_index, job_index};
     }
 
-    std::pair<int, int> decompress_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size) {
-        while (queues[current_queue].jobs.size() >= max_jobs_per_queue) {
-            // Busy-wait loop
-        }
+    std::pair<int, int> decompress_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size, uint32_t* actualOutSize) {
+        //while (queues[current_queue].jobs.size() >= max_jobs_per_queue) {
+        //    // Busy-wait loop
+        //}
 
         qpl_job* job = queues[current_queue].jobs.back();
         job->op = qpl_op_decompress;
@@ -157,6 +159,7 @@ public:
         int job_index = queues[current_queue].jobs.size() - 1;
         current_queue = (current_queue + 1) % num_queues;
 
+        *actualOutSize = job->total_out;
         return {queue_index, job_index};
     }
 

@@ -1,9 +1,10 @@
 #include <google/protobuf/util/message_differencer.h>
 
 #include"person.pb.h"
-#include"scatter_gather.h"
 #include"proto_init.h"
 #include"iaa_comp.h"
+#include"scatter_gather.h"
+#include"custom_alloc.h"
 
 static constexpr size_t kNofIterations = 1001;
 
@@ -108,11 +109,8 @@ inline void benchmark_ser1de_deserialize(ScatterGather& scagatherer, IAAComp& ia
         scatter_schema.reserve(BUFFER_SIZE/16);
 
         // <------------ DECOMPRESS ------>
-        int queue_id, job_id;
         begin = std::chrono::steady_clock::now();
-        //iaa_comp.decompress_non_blocking(compressed[i].get(), comprOutputSize[i], gather_out.data(), gather_out.size());
-        std::tie(queue_id, job_id) = iaa_comp.decompress_non_blocking(compressed[i].get(), comprOutputSize[i], gather_out.data(), gather_out.size());
-        //iaa_comp.decompress_blocking(compressed[i].get(), comprOutputSize[i], gather_out.data(), gather_out.size(), &decomprOutputSize[i]);
+        iaa_comp.decompress_blocking(compressed[i].get(), comprOutputSize[i], gather_out.data(), gather_out.size(), &decomprOutputSize[i]);
         //iaa_comp.decompress_blocking(compressed[i].get(), comprOutputSize[i], gather_outs[0].data(), gather_outs[0].size()+1024, &decomprOutputSize[i]);
         end = std::chrono::steady_clock::now();
         duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
@@ -120,9 +118,6 @@ inline void benchmark_ser1de_deserialize(ScatterGather& scagatherer, IAAComp& ia
         // <------------ SCATTER SCHEMA ------>
         begin = std::chrono::steady_clock::now();
         out_messages[i].generate_schema(scatter_schema);
-        while (iaa_comp.poll_job(queue_id, job_id) == QPL_STS_BEING_PROCESSED) {
-            // Job is still processing
-        }
         end = std::chrono::steady_clock::now();
         duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
         scatter_schema_durations.push_back(duration);
@@ -144,6 +139,7 @@ int benchmark (bool dsa) {
 
     // initialize iaa jobs
     qpl_path_t path = qpl_path_hardware; // or QPL_PATH_SOFTWARE
+    //qpl_path_t path = qpl_path_software; // or QPL_PATH_SOFTWARE
     size_t iaa_num_queues = 1;
     size_t iaa_max_jobs_per_queue = 16;
     IAAComp iaa_comp(path, iaa_num_queues, iaa_max_jobs_per_queue);
@@ -222,7 +218,8 @@ int benchmark (bool dsa) {
         begin = std::chrono::steady_clock::now();
         // <------------ STRING SETTERS ------>
         std::string dummy_str("a", sizes_for_scatter[i][1]);
-        string_generated_setters(out_messages[i], dummy_str);
+        //string_generated_setters(out_messages[i], dummy_str);
+        allocate_with_sizes_hacky(out_messages[i], sizes_for_scatter[i], dummy_str);
         end = std::chrono::steady_clock::now();
 
         duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
@@ -236,10 +233,9 @@ int benchmark (bool dsa) {
         all_correct = google::protobuf::util::MessageDifferencer::Equivalent(messages[i], out_messages[i]);
     }
     std::cout << (all_correct ? "ALL CORRECT" : "ERROR: DATA MISSMATCH") << std::endl;
-    //assert(all_correct);
+    assert(all_correct);
 
     /*
-    */
     if (dsa) {
         report_timings(serialization_durations, "serialization");
         report_timings(deserialization_durations, "deserialization");
@@ -264,6 +260,7 @@ int benchmark (bool dsa) {
         //report_timings(gather_durations, "memcpy_gather");
         //report_timings(scatter_durations, "memcpy_scatter");
     }
+    */
 
     //std::cout << "Average serialization time: " << std::accumulate(serialization_durations.begin(), serialization_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
     //std::cout << "Average deserialization time: " << std::accumulate(deserialization_durations.begin(), deserialization_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
@@ -272,8 +269,8 @@ int benchmark (bool dsa) {
     //std::cout << "Average compression time: " << std::accumulate(compression_durations.begin(), compression_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
     //std::cout << "Average scatter schema time: " << std::accumulate(scatter_schema_durations.begin(), scatter_schema_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
     //std::cout << "Average scatter time: " << std::accumulate(scatter_durations.begin(), scatter_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
-    //std::cout << "Average decompression time: " << std::accumulate(decompression_durations.begin(), decompression_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
-    //std::cout << "Average allocation time: " << std::accumulate(allocation_durations.begin(), allocation_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
+    std::cout << "Average decompression time: " << std::accumulate(decompression_durations.begin(), decompression_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
+    std::cout << "Average allocation time: " << std::accumulate(allocation_durations.begin(), allocation_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
 
     return 0;
 }
