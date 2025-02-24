@@ -220,8 +220,8 @@ def process_output(res, warmups=1):
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--widths', metavar='N', type=int, nargs='+', default=[3, 4, 5, 6])
-parser.add_argument('--depths', metavar='N', type=int, nargs='+', default=[2, 3])
+parser.add_argument('--widths', metavar='N', type=int, nargs='+', default=[3, 4, 5])
+parser.add_argument('--depths', metavar='N', type=int, nargs='+', default=[2, 3, 4])
 parser.add_argument('--ratios', metavar='N', type=int, nargs='+', default=[4])
 parser.add_argument('--sets', metavar='N', type=int, nargs='+', default=[1,2,3])
 

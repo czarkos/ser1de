@@ -135,7 +135,7 @@ if args.build:
 
 if args.run:
     # Run benchmark
-    res = subprocess.run(f'sudo ./test', cwd=benchmark_path + 'build/', shell=True, text=True, capture_output=True)
+    res = subprocess.run(f'sudo taskset -c 0 ./test', cwd=benchmark_path + 'build/', shell=True, text=True, capture_output=True)
     result = res.stdout
     print(result)
     if res.returncode != 0:
