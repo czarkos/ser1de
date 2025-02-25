@@ -66,18 +66,18 @@ inline void benchmark_ser1de_serialize(ScatterGather& scagatherer, IAAComp& iaa_
 
     size_t queue_index = 0, job_index = 0;
 
+    // Initialize intermediate variables
+    // gather schema
+    //ScatterGather::Schema gather_schema;
+    //gather_schema.reserve(BUFFER_SIZE/16);
+    std::vector<uint8_t*> ptrs;
+    ptrs.reserve(BUFFER_SIZE/16);
+    std::vector<size_t> sizes;
+    sizes.reserve(BUFFER_SIZE/16);
+
     // gather
     std::vector<uint8_t> gather_out(BUFFER_SIZE, 0);
     for (size_t i = 0; i < kNofIterations; ++i) {
-        // Initialize intermediate variables
-        // gather schema
-        ScatterGather::Schema gather_schema;
-        gather_schema.reserve(BUFFER_SIZE/16);
-        std::vector<uint8_t*> ptrs;
-        ptrs.reserve(BUFFER_SIZE/16);
-        std::vector<size_t> sizes;
-        sizes.reserve(BUFFER_SIZE/16);
-
         // <------------ GATHER SCHEMA ------>
 		//messages[i].generate_schema(gather_schema);
         begin = std::chrono::steady_clock::now();
@@ -132,13 +132,8 @@ inline void benchmark_ser1de_serialize(ScatterGather& scagatherer, IAAComp& iaa_
         end = std::chrono::steady_clock::now();
         duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
         compression_durations.push_back(duration);
-
-        // <------------ MAKE HEADER ------>
-        std::string result;
-        result.append(out_size + comprOutputSize[i], sizeof(out_size));
-        result.append(out_size, sizeof(out_size));
-        result.append(reinterpret_cast<const char*>(ptrs.data()), ptrs.size());
-        result.append(reinterpret_cast<const char*>(compressed[i].get()), comprOutputSize[i]);
+        ptrs.clear();
+        sizes.clear();
     }
     std::cout << "gather_out(bytes), " << out_size << "\n";
 }
@@ -341,7 +336,6 @@ int benchmark (bool dsa) {
     */
     assert(all_correct);
 
-    /*
     if (dsa) {
         report_timings(serialization_durations, "serialization");
         report_timings(deserialization_durations, "deserialization");
@@ -366,6 +360,7 @@ int benchmark (bool dsa) {
         //report_timings(gather_durations, "memcpy_gather");
         //report_timings(scatter_durations, "memcpy_scatter");
     }
+    /*
     */
 
     //std::cout << "Average serialization time: " << std::accumulate(serialization_durations.begin(), serialization_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
@@ -373,10 +368,10 @@ int benchmark (bool dsa) {
     //std::cout << "Average gather schema time: " << std::accumulate(gather_schema_durations.begin(), gather_schema_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
     //std::cout << "Average gather time: " << std::accumulate(gather_durations.begin(), gather_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
     //std::cout << "Average compression time: " << std::accumulate(compression_durations.begin(), compression_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
-    std::cout << "Average scatter schema time: " << std::accumulate(scatter_schema_durations.begin(), scatter_schema_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
+    //std::cout << "Average scatter schema time: " << std::accumulate(scatter_schema_durations.begin(), scatter_schema_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
     //std::cout << "Average scatter time: " << std::accumulate(scatter_durations.begin(), scatter_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
     //std::cout << "Average decompression time: " << std::accumulate(decompression_durations.begin(), decompression_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
-    std::cout << "Average allocation time: " << std::accumulate(allocation_durations.begin(), allocation_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
+    //std::cout << "Average allocation time: " << std::accumulate(allocation_durations.begin(), allocation_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations << "ns" << std::endl;
 
     return 0;
 }
