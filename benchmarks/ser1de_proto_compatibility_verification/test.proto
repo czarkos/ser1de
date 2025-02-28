@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package tachidromos.tests;
+
+message SingularMessage {
+    enum Status {
+        UNKNOWN = 0;
+        ACTIVE = 1;
+        INACTIVE = 2;
+        DELETED = 3;
+    }
+
+    int32 int_field = 1;
+    int64 long_field = 2;
+    uint32 uint_field = 3;
+    uint64 ulong_field = 4;
+    sint32 sint_field = 5;
+    sint64 slong_field = 6;
+    fixed32 fixed_field = 7;
+    fixed64 lfixed_field = 8;
+    sfixed32 sfixed_field = 9;
+    sfixed64 slfixed_field = 10;
+    float float_field = 11;
+    double double_field = 12;
+    bool bool_field = 13;
+    // test the case where a pointer field is left empty
+    string test_empty_string = 14;
+    string string_field = 15;
+    bytes test_empty_bytes = 16;
+    bytes bytes_field = 17;
+    Status status = 18;
+    // tests the case where the only primitive(s) is left empty
+    message NestedMessage {
+        string nested_string = 1;
+        int32 nested_int = 2;
+    }
+    NestedMessage nested_message = 19;
+    // tests multiple nested messages
+    // also tests the case where a message does not have primitive fields (subtle handling required in schema creation and allocation)
+    message NestedMessage2 {
+        string nested_string1 = 1;
+        string nested_string2 = 2;
+        //int32 nested_int = 2;
+    }
+    NestedMessage2 nested_message2 = 20;
+    // test the case where an integer is left empty
+    int32 test_empty_int = 21;
+    int32 whatever_bro = 22;
+}
+
+message RepeatedMessage {
+    repeated int32 int_fields = 1;
+    repeated int64 long_fields = 2;
+    repeated uint32 uint_fields = 3;
+    repeated uint64 ulong_fields = 4;
+    repeated sint32 sint_fields = 5;
+    repeated sint64 slong_fields = 6;
+    repeated fixed32 fixed_fields = 7;
+    repeated fixed64 lfixed_fields = 8;
+    repeated sfixed32 sfixed_fields = 9;
+    repeated sfixed64 slfixed_fields = 10;
+    repeated float float_fields = 11;
+    repeated double double_fields = 12;
+    repeated bool bool_fields = 13;
+    repeated string string_fields = 14;
+    repeated bytes bytes_fields = 15;
+    repeated SingularMessage.NestedMessage nested_messages = 16;
+}
+
+message IntRepeatedMessage {
+    repeated int32 int_fields = 1;
+}
+
+message StringRepeatedMessage {
+    repeated string string_fields = 1;
+}
+
+message NestedRepeatedMessage {
+    repeated SingularMessage.NestedMessage nested_messages = 1;
+}

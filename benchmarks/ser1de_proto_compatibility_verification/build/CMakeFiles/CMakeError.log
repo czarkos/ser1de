@@ -1,0 +1,27 @@
+Performing C++ SOURCE FILE Test ABSL_INTERNAL_AT_LEAST_CXX20 failed with the following output:
+Change Dir: /home/christos/dev/ser1de/benchmarks/ser1de_proto_compatibility_verification/build/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_28265/fast && gmake[1]: Entering directory '/home/christos/dev/ser1de/benchmarks/ser1de_proto_compatibility_verification/build/CMakeFiles/CMakeTmp'
+/usr/bin/gmake  -f CMakeFiles/cmTC_28265.dir/build.make CMakeFiles/cmTC_28265.dir/build
+gmake[2]: Entering directory '/home/christos/dev/ser1de/benchmarks/ser1de_proto_compatibility_verification/build/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_28265.dir/src.cxx.o
+/usr/bin/c++ -DABSL_INTERNAL_AT_LEAST_CXX20   -o CMakeFiles/cmTC_28265.dir/src.cxx.o -c /home/christos/dev/ser1de/benchmarks/ser1de_proto_compatibility_verification/build/CMakeFiles/CMakeTmp/src.cxx
+/home/christos/dev/ser1de/benchmarks/ser1de_proto_compatibility_verification/build/CMakeFiles/CMakeTmp/src.cxx:6:4: error: #error "The compiler defaults or is configured for C++ < 20"
+    6 | #  error "The compiler defaults or is configured for C++ < 20"
+      |    ^~~~~
+gmake[2]: *** [CMakeFiles/cmTC_28265.dir/build.make:78: CMakeFiles/cmTC_28265.dir/src.cxx.o] Error 1
+gmake[2]: Leaving directory '/home/christos/dev/ser1de/benchmarks/ser1de_proto_compatibility_verification/build/CMakeFiles/CMakeTmp'
+gmake[1]: *** [Makefile:127: cmTC_28265/fast] Error 2
+gmake[1]: Leaving directory '/home/christos/dev/ser1de/benchmarks/ser1de_proto_compatibility_verification/build/CMakeFiles/CMakeTmp'
+
+
+Source file was:
+#ifdef _MSC_VER
+#  if _MSVC_LANG < 202002L
+#    error "The compiler defaults or is configured for C++ < 20"
+#  endif
+#elif __cplusplus < 202002L
+#  error "The compiler defaults or is configured for C++ < 20"
+#endif
+int main() { return 0; }
+
