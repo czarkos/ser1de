@@ -7,13 +7,16 @@
 #include <string>
 #include <vector>
 
+template<typename DerivedProtoMessage>
 class Ser1de {
 public:
     Ser1de(std::string execution_path);
     Ser1de();
     ~Ser1de();
-    void SerializeToString(google::protobuf::Message& message, std::string* output);
-    void ParseFromString(const std::string& data, google::protobuf::Message* message);
+    void SerializeToString(DerivedProtoMessage& message, std::string* output);
+    void ParseFromString(const std::string& data, DerivedProtoMessage* message);
+    //void SerializeToString(const google::protobuf::Message& message, std::string* output);
+    //void ParseFromString(const std::string& data, google::protobuf::Message* message);
 private:
     // IAA
     IAAComp* iaa_comp;
@@ -54,7 +57,8 @@ private:
 
 };
 
-Ser1de::Ser1de(std::string execution_path) {
+template<typename DerivedProtoMessage>
+Ser1de<DerivedProtoMessage>::Ser1de(std::string execution_path) {
     if (execution_path == "Hardware") {
         iaa_comp = new IAAComp(qpl_path_hardware, 1, 16);
         //iaa_compressor = new IAAComp(qpl_path_hardware, 1, 16);
@@ -82,7 +86,8 @@ Ser1de::Ser1de(std::string execution_path) {
     deser_ptrs.reserve(SCHEMA_SIZE);
 }
 
-Ser1de::Ser1de() {
+template<typename DerivedProtoMessage>
+Ser1de<DerivedProtoMessage>::Ser1de() {
     iaa_comp = new IAAComp(qpl_path_hardware, 1, 16);
     scagatherer = new ScatterGather(DML_PATH_HW, 350);
 
@@ -95,7 +100,8 @@ Ser1de::Ser1de() {
     deser_ptrs.reserve(SCHEMA_SIZE);
 }
 
-Ser1de::~Ser1de() {
+template<typename DerivedProtoMessage>
+Ser1de<DerivedProtoMessage>::~Ser1de() {
     delete iaa_comp;
     delete scagatherer;
     //delete iaa_compressor;
@@ -105,8 +111,8 @@ Ser1de::~Ser1de() {
 }
 
 // Serialize the message to a string
-void Ser1de::SerializeToString(google::protobuf::Message& message, std::string* output) {
-//void Ser1de::SerializeToString(const google::protobuf::Message& message, std::string* output) {
+template<typename DerivedProtoMessage>
+void Ser1de<DerivedProtoMessage>::SerializeToString(DerivedProtoMessage& message, std::string* output) {
         // <------------ GATHER SCHEMA ------>
         message.generate_seperated_schema(ser_ptrs, ser_sizes);
         // <------------ GATHER ------>
@@ -121,21 +127,18 @@ void Ser1de::SerializeToString(google::protobuf::Message& message, std::string* 
         ser_sizes.clear();
 }
 
-// Parse the string to a message
-void Ser1de::ParseFromString(const std::string& data, google::protobuf::Message* message) {
+template<typename DerivedProtoMessage>
+void Ser1de<DerivedProtoMessage>::ParseFromString(const std::string& data, DerivedProtoMessage* message) {
     size_t queue_index, job_index;
     // <------------ READ HEADER ------>
     read_header(data, deser_gather_out_size, deserComprOutputSize, deser_sizes_for_scatter, deser_compressed);
     // <------------ DECOMPRESS ------>
     std::tie(queue_index, job_index) = iaa_comp->decompress_non_blocking(const_cast<uint8_t*>(deser_compressed), deserComprOutputSize, deser_decompress_out.data(), deser_gather_out_size);
     // <------------ ALLOCATE AND CREATE SCATTER SCHEMA ------>
-    message->allocate_from_sizes(deser_sizes_for_scatter);
-    message->generate_scatter_ptrs(deser_ptrs);
-    //message->generate_scatter_ptrs_and_allocate_from_sizes(deser_ptrs, deser_sizes_for_scatter);
+    message->generate_scatter_ptrs_and_allocate_from_sizes(deser_ptrs, deser_sizes_for_scatter);
     // <------------ SCATTER ------>
     // first make sure decompression is finished
     while (iaa_comp->poll_job(queue_index, job_index) != QPL_STS_OK){}
-    assert(iaa_comp->poll_job(queue_index, job_index) == QPL_STS_OK);
     scagatherer->ScatterWithMemCpy(deser_decompress_out.data(), deser_ptrs, deser_sizes_for_scatter);
 
     // clear intermediate buffers for the next request
@@ -143,7 +146,8 @@ void Ser1de::ParseFromString(const std::string& data, google::protobuf::Message*
     deser_sizes_for_scatter.clear();
 }
 
-inline void Ser1de::make_header(std::string& ser1de_ser_out, size_t& out_size, uint32_t& comprOutputSize, size_t& num_sizes, std::vector<size_t>& sizes, std::unique_ptr<uint8_t[]>& compressed) {
+template<typename DerivedProtoMessage>
+inline void Ser1de<DerivedProtoMessage>::make_header(std::string& ser1de_ser_out, size_t& out_size, uint32_t& comprOutputSize, size_t& num_sizes, std::vector<size_t>& sizes, std::unique_ptr<uint8_t[]>& compressed) {
     ser1de_ser_out.reserve(sizeof(out_size) + sizeof(comprOutputSize) + sizes.size() * sizeof(uint8_t*) + comprOutputSize * sizeof(uint8_t));
     // Append the size values
     ser1de_ser_out.append(reinterpret_cast<const char*>(&out_size), sizeof(out_size));
@@ -153,14 +157,10 @@ inline void Ser1de::make_header(std::string& ser1de_ser_out, size_t& out_size, u
     ser1de_ser_out.append(reinterpret_cast<const char*>(sizes.data()), sizes.size() * sizeof(size_t));
     // Append the compressed data
     ser1de_ser_out.append(reinterpret_cast<const char*>(compressed.get()), comprOutputSize);
-    //std::cout << "out_size: " << out_size << " comprOutputSize: " << comprOutputSize << " num_sizes: " << num_sizes << std::endl;
-    //std::cout << "************************************************************************************************" << std::endl;
-    //for (auto size : sizes)
-    //    std::cout << size << " ";
-    //std::cout << std::endl;
 }
 
-inline void Ser1de::read_header(const std::string& ser1de_ser_out, size_t& out_size, uint32_t& comprOutputSize, std::vector<size_t>& sizes_for_scatter, const uint8_t*& compressed) {
+template<typename DerivedProtoMessage>
+inline void Ser1de<DerivedProtoMessage>::read_header(const std::string& ser1de_ser_out, size_t& out_size, uint32_t& comprOutputSize, std::vector<size_t>& sizes_for_scatter, const uint8_t*& compressed) {
     const char* data = ser1de_ser_out.data();
     size_t offset = 0;
     size_t num_sizes = 0;
@@ -183,12 +183,6 @@ inline void Ser1de::read_header(const std::string& ser1de_ser_out, size_t& out_s
     
     // Recreate the compressed data array
     compressed = reinterpret_cast<const uint8_t*>(data + offset);
-    //std::cout << "************************************************************************************************" << std::endl;
-    //std::cout << "out_size: " << out_size << " comprOutputSize: " << comprOutputSize << " num_sizes: " << num_sizes << std::endl;
-    //std::cout << "************************************************************************************************" << std::endl;
-    //for (auto size : sizes_for_scatter)
-    //    std::cout << size << " ";
-    //std::cout << std::endl;
 }
 
 #endif

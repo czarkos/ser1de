@@ -12,6 +12,20 @@
 
 class ScatterGather {
 public:
+    /*
+    class CustomTuple
+    {
+        private:
+            std::vector<uint8_t*> ptrs;
+            std::vector<size_t> sizes;
+        public:
+            CustomTuple(std::vector<uint8_t*> ptrs, std::vector<size_t> sizes) : ptrs(ptrs), sizes(sizes) {}
+            std::vector<uint8_t*>* get_ptrs() { return &ptrs; }
+            std::vector<size_t>* get_sizes() { return &sizes; }
+    };
+    
+    typedef std::vector<CustomTuple> Schema;
+    */
     typedef std::vector<std::tuple<uint8_t*, size_t>> Schema;
     ScatterGather(dml_path_t execution_path, size_t num_jobs);
     ~ScatterGather();
@@ -31,6 +45,8 @@ public:
     // Memcpy versions
     int GatherWithMemCpy(const Schema& schema, uint8_t* out, size_t* out_size);
     int ScatterWithMemCpy(const uint8_t* in, const Schema& schema);
+    int GatherWithMemCpy(const std::vector<uint8_t*>& ptrs_list, const std::vector<size_t> sizes_list, uint8_t* out, size_t* out_size);
+    int ScatterWithMemCpy(const uint8_t* in, const std::vector<uint8_t*>& ptrs_list, const std::vector<size_t> sizes_list); 
     void UpdateScatterSchema(Schema& schema, std::vector<size_t> sizes);
 
 private:
@@ -465,13 +481,71 @@ int ScatterGather::GatherWithMemCpy(const Schema& schema, uint8_t* out, size_t* 
     return 0;
 }
 
+int ScatterGather::GatherWithMemCpy(const std::vector<uint8_t*>& ptrs_list, const std::vector<size_t> sizes_list, uint8_t* out, size_t* out_size) {
+    size_t out_offset = 0;
+    size_t num_ptrs = ptrs_list.size();
+    size_t num_sizes = sizes_list.size();
+    assert(num_ptrs == num_sizes);
+
+    for (size_t i = 0; i < num_ptrs; i++) {
+        if (ptrs_list[i] == nullptr) {
+            continue;
+        }
+        memcpy(out + out_offset, ptrs_list[i], sizes_list[i]);
+        out_offset += sizes_list[i];
+    }
+    *out_size = out_offset;
+
+    /*
+    std::cout << "printing contents of gather output buffer:\n";
+    std::cout << *((int*)out) << " ";
+    std::cout << *((int*)(out+4)) << " ";
+    for (int i = 0; i < 10; i++) std::cout << out[8+i];
+    std::cout << " ";
+    for (int i = 0; i < 10; i++) std::cout << out[10+8+i];
+    std::cout << "\n------------------\n";
+    */
+    return 0;
+}
+
 int ScatterGather::ScatterWithMemCpy(const uint8_t* in, const Schema& schema) {
     size_t in_offset = 0;
+
     for (const auto& el : schema) {
         //std::cout << "ScatterWithMemCpy from source " << in + in_offset << " to destination " << const_cast<uint8_t*>(std::get<0>(el));
         //std::cout << " with size " << std::get<1>(el) << "\n";
         memcpy(const_cast<uint8_t*>(std::get<0>(el)), in + in_offset, std::get<1>(el));
         in_offset += std::get<1>(el);
+    }
+    /*
+    std::cout << "printing contents of scatter input buffer:\n";
+    std::cout << *((int*)in) << " ";
+    std::cout << *((int*)(in+4)) << " ";
+    for (int i = 0; i < 10; i++) std::cout << in[8+i];
+    std::cout << " ";
+    for (int i = 0; i < 10; i++) std::cout << in[10+8+i];
+    std::cout << "\n------------------\n";
+    */
+    return 0;
+}
+
+int ScatterGather::ScatterWithMemCpy(const uint8_t* in, const std::vector<uint8_t*>& ptrs_list, const std::vector<size_t> sizes_list) {
+    size_t in_offset = 0;
+    size_t num_ptrs = ptrs_list.size();
+    size_t num_sizes = sizes_list.size();
+
+    //std::cout << "num_ptrs " << num_ptrs << "\n";
+    //std::cout << "num_sizes " << num_sizes << "\n";
+    assert(num_ptrs == num_sizes);
+
+    for (size_t i = 0; i < num_ptrs; i++) {
+        if (ptrs_list[i] == nullptr) {
+            continue;
+        }
+        //std::cout << "ScatterWithMemCpy from source " << in + in_offset << " to destination " << const_cast<uint8_t*>(ptrs_list[i]);
+        //std::cout << " with size " << sizes_list[i] << "\n";
+        memcpy(const_cast<uint8_t*>(ptrs_list[i]), in + in_offset, sizes_list[i]);
+        in_offset += sizes_list[i];
     }
     /*
     std::cout << "printing contents of scatter input buffer:\n";

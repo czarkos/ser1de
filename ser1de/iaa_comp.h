@@ -1,6 +1,7 @@
 #ifndef IAA_COMP_H
 #define IAA_COMP_H
 
+#include <chrono>
 #include <iostream>
 #include <cassert>
 #include <memory>
@@ -47,7 +48,7 @@ private:
         return 0;
     }
 
-    qpl_status submit_job(qpl_job *job) {
+    inline qpl_status submit_job(qpl_job *job) {
         qpl_status status = qpl_submit_job(job);
         if (status != QPL_STS_OK) {
             std::cerr << "An error acquired during job submission. Error code: " << status << std::endl;
@@ -82,9 +83,9 @@ public:
 
     //std::pair<int, int> compress_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size) {
     std::pair<int, int> compress_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size, uint32_t* actualOutSize) {
-        //while (queues[current_queue].jobs.size() >= max_jobs_per_queue) {
-        //    // Busy-wait loop
-        //}
+        while (queues[current_queue].jobs.size() >= max_jobs_per_queue) {
+            // Busy-wait loop
+        }
 
         qpl_job* job = queues[current_queue].jobs.back();
         job->op = qpl_op_compress;
@@ -122,7 +123,7 @@ public:
         job->next_out_ptr = destination;
         job->available_out = destination_size;
         job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST;
-
+        
         qpl_status status = submit_job(job);
         if (status != QPL_STS_OK) {
             std::cerr << "Compression job submission failed with error code: " << status << std::endl;
@@ -164,6 +165,7 @@ public:
     }
 
     std::pair<int, int> decompress_non_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size) {
+        //std::chrono::steady_clock::time_point de_begin = std::chrono::steady_clock::now();
         while (queues[current_queue].jobs.size() >= max_jobs_per_queue) {
             // Busy-wait loop
         }
@@ -176,8 +178,15 @@ public:
         job->next_out_ptr = destination;
         job->available_out = destination_size;
         job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST;
+        //std::chrono::steady_clock::time_point de_end = std::chrono::steady_clock::now();
+        //std::chrono::nanoseconds de_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(de_end - de_begin);
+        //std::cout << "Decompression job initialization time: " << de_duration.count() << "ns" << std::endl;
 
+        //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         qpl_status status = submit_job(job);
+        //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        //std::chrono::nanoseconds duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
+        //std::cout << "Decompression job submission time: " << duration.count() << "ns" << std::endl;
         if (status != QPL_STS_OK) {
             std::cerr << "Decompression job submission failed." << std::endl;
         }
@@ -190,6 +199,7 @@ public:
     }
 
     qpl_status poll_job(int queue_index, int job_index) {
+        /*
         if (queue_index < 0 || queue_index >= num_queues) {
             std::cerr << "Invalid queue index." << std::endl;
             return QPL_STS_INVALID_PARAM_ERR;
@@ -199,6 +209,7 @@ public:
             std::cerr << "Invalid job index." << std::endl;
             return QPL_STS_INVALID_PARAM_ERR;
         }
+        */
 
         qpl_job* job = queues[queue_index].jobs[job_index];
         return qpl_check_job(job);
@@ -217,6 +228,11 @@ public:
         }
         queues[queue_index].job_buffers.push_back(std::move(job_buffer));
         queues[queue_index].jobs.push_back(job);
+    }
+
+    size_t get_job_compr_size(int queue_index, int job_index) {
+        //assert(qpl_check_job(queues[queue_index].jobs[job_index]) == QPL_STS_OK);
+        return queues[queue_index].jobs[job_index]->total_out;
     }
 };
 
