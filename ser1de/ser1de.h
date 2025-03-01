@@ -2,7 +2,7 @@
 #define SER1DE_H
 
 #include"iaa_comp.h"
-#include"scatter_gather.h"
+#include"sw_only_scatter_gather.h"
 #include <google/protobuf/message.h>
 #include <string>
 #include <vector>
@@ -14,6 +14,9 @@ public:
     ~Ser1de();
     void SerializeToString(google::protobuf::Message& message, std::string* output);
     void ParseFromString(const std::string& data, google::protobuf::Message* message);
+
+    uint32_t get_ser_gather_out_size() { return ser_gather_out_size; }
+    uint32_t get_serComprOutputSize() { return serComprOutputSize; }
 private:
     // IAA
     IAAComp* iaa_comp;
@@ -55,23 +58,15 @@ private:
 };
 
 Ser1de::Ser1de(std::string execution_path) {
+    // Initialize IAA with the appropriate path
     if (execution_path == "Hardware") {
         iaa_comp = new IAAComp(qpl_path_hardware, 1, 16);
-        //iaa_compressor = new IAAComp(qpl_path_hardware, 1, 16);
-        //iaa_decompressor = new IAAComp(qpl_path_hardware, 1, 16);
-        scagatherer = new ScatterGather(DML_PATH_HW, 350);
-        //dsa_gatherer = new ScatterGather(DML_PATH_HARDWARE, 350);
-        //dsa_scatterer = new ScatterGather(DML_PATH_HARDWARE, 350);
     } else if (execution_path == "Software") {
         iaa_comp = new IAAComp(qpl_path_software, 1, 16);
-        //iaa_compressor = new IAAComp(qpl_path_hardware, 1, 16);
-        //iaa_decompressor = new IAAComp(qpl_path_hardware, 1, 16);
-        scagatherer = new ScatterGather(DML_PATH_SW, 350);
-        //dsa_gatherer = new ScatterGather(DML_PATH_HARDWARE, 350);
-        //dsa_scatterer = new ScatterGather(DML_PATH_HARDWARE, 350);
     } else {
         throw std::invalid_argument("Invalid execution path");
     }
+    scagatherer = new ScatterGather();
 
     // pre-allocate the required intermediate buffers
     ser_compressed_out = std::make_unique<uint8_t[]>(BUFFER_SIZE);
@@ -82,9 +77,11 @@ Ser1de::Ser1de(std::string execution_path) {
     deser_ptrs.reserve(SCHEMA_SIZE);
 }
 
+// Default constructor initializes IAA with hardware path
 Ser1de::Ser1de() {
     iaa_comp = new IAAComp(qpl_path_hardware, 1, 16);
-    scagatherer = new ScatterGather(DML_PATH_HW, 350);
+    //scagatherer = new ScatterGather(DML_PATH_HW, 350);
+    scagatherer = new ScatterGather();
 
     // pre-allocate the required intermediate buffers
     ser_compressed_out = std::make_unique<uint8_t[]>(BUFFER_SIZE);
@@ -98,10 +95,6 @@ Ser1de::Ser1de() {
 Ser1de::~Ser1de() {
     delete iaa_comp;
     delete scagatherer;
-    //delete iaa_compressor;
-    //delete iaa_decompressor;
-    //delete dsa_gatherer;
-    //delete dsa_scatterer;
 }
 
 // Serialize the message to a string
@@ -112,6 +105,7 @@ void Ser1de::SerializeToString(google::protobuf::Message& message, std::string* 
         // <------------ GATHER ------>
         scagatherer->GatherWithMemCpy(ser_ptrs, ser_sizes, ser_gather_buffer.data(), &ser_gather_out_size);
         // <------------ COMPRESS ------>
+        //iaa_comp->compress_non_blocking(ser_sizes);
         iaa_comp->compress_blocking(ser_gather_buffer.data(), ser_gather_out_size, ser_compressed_out.get(), ser_gather_out_size+512, &serComprOutputSize);
         // <------------ MAKE HEADER ------>
         size_t num_sizes = ser_sizes.size();
@@ -153,8 +147,10 @@ inline void Ser1de::make_header(std::string& ser1de_ser_out, size_t& out_size, u
     ser1de_ser_out.append(reinterpret_cast<const char*>(sizes.data()), sizes.size() * sizeof(size_t));
     // Append the compressed data
     ser1de_ser_out.append(reinterpret_cast<const char*>(compressed.get()), comprOutputSize);
-    //std::cout << "out_size: " << out_size << " comprOutputSize: " << comprOutputSize << " num_sizes: " << num_sizes << std::endl;
+    //std::cout << "out_size: " << out_size << " comprOutputSize: " << comprOutputSize << " num_sizes: " << num_sizes << " sizes spece (bytes): " << sizes.size() * sizeof(size_t) << std::endl;
     //std::cout << "************************************************************************************************" << std::endl;
+    //iaa_comp->compress_blocking(reinterpret_cast<uint8_t*>(sizes.data()), sizes.size() * sizeof(size_t), ser_compressed_out.get(), sizes.size() * sizeof(size_t)+512, &serComprOutputSize);
+    //std::cout << "compressed sizes size (bytes): " << serComprOutputSize << std::endl;
     //for (auto size : sizes)
     //    std::cout << size << " ";
     //std::cout << std::endl;
@@ -167,13 +163,13 @@ inline void Ser1de::read_header(const std::string& ser1de_ser_out, size_t& out_s
 
     // Directly point to first sizeof(size_t) bytes for out_size
     out_size = *reinterpret_cast<const size_t*>(data + offset);
-    offset += sizeof(size_t);
+    offset += sizeof(out_size);
     // Directly point to second sizeof(size_t) bytes for out_size
     comprOutputSize = *reinterpret_cast<const uint32_t*>(data + offset);
-    offset += sizeof(uint32_t);
+    offset += sizeof(comprOutputSize);
     // Directly point to third sizeof(size_t) bytes for out_size
     num_sizes = *reinterpret_cast<const size_t*>(data + offset);
-    offset += sizeof(size_t);
+    offset += sizeof(num_sizes);
 
     // Recreate the vector of pointers
     //ptrs.resize(*num_sizes);
