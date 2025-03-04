@@ -8,7 +8,8 @@ echo "-------------------SETTING UP PROTOBUF-------------------"
 echo "---------------------------------------------------------"
 cd protobuf
 git checkout -b schema-integration origin/schema-integration
-cmake . -DCMAKE_CXX_STANDARD=14
+#cmake . -DCMAKE_CXX_STANDARD=14
+cmake . -DCMAKE_CXX_STANDARD=14 -Dprotobuf_BUILD_TESTS=OFF
 cmake --build . -- -j16
 cd ..
 echo "---------------------------------------------------------"
