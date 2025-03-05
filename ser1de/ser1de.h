@@ -23,7 +23,7 @@ private:
     // DSA
     ScatterGather* scagatherer;
     // Utility variables
-    size_t BUFFER_SIZE = 4*4096; // 16KB
+    size_t BUFFER_SIZE = 8*4096; // 32KB
     size_t SCHEMA_SIZE = 1024; // 1KB
     /*
     4 intermediate buffers : 2 for serialization, 2 for deserialization
