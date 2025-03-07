@@ -1,6 +1,5 @@
 #ifndef IAA_COMP_H
 #define IAA_COMP_H
-
 #include <chrono>
 #include <iostream>
 #include <cassert>
@@ -10,15 +9,17 @@
 
 class IAAComp {
 private:
-    struct Queue {
-        std::vector<std::unique_ptr<uint8_t[]>> job_buffers;
-        std::vector<qpl_job*> jobs;
-    };
+    std::vector<std::unique_ptr<uint8_t[]>> job_buffers;
+    std::vector<qpl_job*> jobs;
 
-    std::vector<Queue> queues;
-    int current_queue;
-    int num_queues;
-    int max_jobs_per_queue;
+    size_t max_jobs;
+    size_t current_job;
+    size_t active_jobs;
+
+    // this variable was in a constructor used in early versions of ser1de and in motivational benchmarks
+    // the idea behind this variable was to try and have some control over the iaa work_queues
+    // in this version of ser1de, it is here for compatibility reasons
+    size_t num_queues;
 
     std::unique_ptr<uint8_t[]> init_qpl(qpl_path_t e_path, qpl_job*& job) {
         uint32_t job_size = 0;
@@ -56,38 +57,63 @@ private:
         return status;
     }
 
+    inline qpl_job* get_next_iaa_job() {
+        // get job
+        qpl_job* job = jobs[current_job];
+
+        // update current job index
+        current_job = (current_job + 1) % max_jobs;
+
+        return job;
+    }
+
+    inline size_t get_just_used_index() {
+        if (current_job == 0)
+            return max_jobs-1;
+        else
+            return current_job-1;
+    }
+
 public:
-    IAAComp(qpl_path_t path, int num_queues, int max_jobs_per_queue) 
-        : current_queue(0), num_queues(num_queues), max_jobs_per_queue(max_jobs_per_queue) {
-        queues.resize(num_queues);
-        for (int i = 0; i < num_queues; ++i) {
+    IAAComp(qpl_path_t path, size_t num_queues, size_t max_jobs) : max_jobs(max_jobs), current_job(0), active_jobs(0), num_queues(num_queues) {
+        // initialize num_max_jobs jobs
+        for (size_t i = 0; i < max_jobs; ++i) {
             qpl_job* job = nullptr;
             auto job_buffer = init_qpl(path, job);
             if (!job_buffer) {
                 throw std::runtime_error("Failed to initialize QPL job.");
             }
-            queues[i].job_buffers.push_back(std::move(job_buffer));
-            queues[i].jobs.push_back(job);
+            job_buffers.push_back(std::move(job_buffer));
+            jobs.push_back(job);
+        }
+    }
+
+    IAAComp() : max_jobs(2), current_job(0), active_jobs(0), num_queues(0) {
+        // default path is the hardware path with 2 pre-allocated jobs
+        qpl_path_t path = qpl_path_hardware;
+        // initialize num_max_jobs jobs
+        for (size_t i = 0; i < max_jobs; ++i) {
+            qpl_job* job = nullptr;
+            auto job_buffer = init_qpl(path, job);
+            if (!job_buffer) {
+                throw std::runtime_error("Failed to initialize QPL job.");
+            }
+            job_buffers.push_back(std::move(job_buffer));
+            jobs.push_back(job);
         }
     }
 
     ~IAAComp() {
-        for (auto& queue : queues) {
-            for (auto job : queue.jobs) {
-                if (job) {
-                    free_qpl(job);
-                }
+        for (auto job : jobs) {
+            if (job) {
+                free_qpl(job);
             }
         }
     }
 
-    //std::pair<int, int> compress_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size) {
-    std::pair<int, int> compress_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size, uint32_t* actualOutSize) {
-        while (queues[current_queue].jobs.size() >= max_jobs_per_queue) {
-            // Busy-wait loop
-        }
+    size_t compress_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size, uint32_t* actualOutSize) {
+        qpl_job* job = get_next_iaa_job();
 
-        qpl_job* job = queues[current_queue].jobs.back();
         job->op = qpl_op_compress;
         job->level = qpl_default_level;
         job->next_in_ptr = source;
@@ -102,20 +128,13 @@ public:
             exit(-1);
         }
 
-        int queue_index = current_queue;
-        int job_index = queues[current_queue].jobs.size() - 1;
-        current_queue = (current_queue + 1) % num_queues;
-
         *actualOutSize = job->total_out;
-        return {queue_index, job_index};
+        return get_just_used_index();
     }
 
-    std::pair<int, int> compress_non_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size) {
-        while (queues[current_queue].jobs.size() >= max_jobs_per_queue) {
-            // Busy-wait loop
-        }
+    size_t compress_non_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size) {
+        qpl_job* job = get_next_iaa_job();
 
-        qpl_job* job = queues[current_queue].jobs.back();
         job->op = qpl_op_compress;
         job->level = qpl_default_level;
         job->next_in_ptr = source;
@@ -130,19 +149,12 @@ public:
             exit(-1);
         }
 
-        int queue_index = current_queue;
-        int job_index = queues[current_queue].jobs.size() - 1;
-        current_queue = (current_queue + 1) % num_queues;
-
-        return {queue_index, job_index};
+        return get_just_used_index();
     }
 
-    std::pair<int, int> decompress_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size, uint32_t* actualOutSize) {
-        //while (queues[current_queue].jobs.size() >= max_jobs_per_queue) {
-        //    // Busy-wait loop
-        //}
+    size_t decompress_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size, uint32_t* actualOutSize) {
+        qpl_job* job = get_next_iaa_job();
 
-        qpl_job* job = queues[current_queue].jobs.back();
         job->op = qpl_op_decompress;
         job->level = qpl_default_level;
         job->next_in_ptr = source;
@@ -153,24 +165,16 @@ public:
 
         qpl_status status = qpl_execute_job(job);
         if (status != QPL_STS_OK) {
-            std::cerr << "Decompression failed." << std::endl;
+            std::cerr << "Decompression failed with error code: " << status << std::endl;
         }
-
-        int queue_index = current_queue;
-        int job_index = queues[current_queue].jobs.size() - 1;
-        current_queue = (current_queue + 1) % num_queues;
 
         *actualOutSize = job->total_out;
-        return {queue_index, job_index};
+        return get_just_used_index();
     }
 
-    std::pair<int, int> decompress_non_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size) {
-        //std::chrono::steady_clock::time_point de_begin = std::chrono::steady_clock::now();
-        while (queues[current_queue].jobs.size() >= max_jobs_per_queue) {
-            // Busy-wait loop
-        }
+    size_t decompress_non_blocking(uint8_t *source, uint32_t source_size, uint8_t *destination, uint32_t destination_size) {
+        qpl_job* job = get_next_iaa_job();
 
-        qpl_job* job = queues[current_queue].jobs.back();
         job->op = qpl_op_decompress;
         job->level = qpl_default_level;
         job->next_in_ptr = source;
@@ -178,61 +182,22 @@ public:
         job->next_out_ptr = destination;
         job->available_out = destination_size;
         job->flags = QPL_FLAG_FIRST | QPL_FLAG_LAST;
-        //std::chrono::steady_clock::time_point de_end = std::chrono::steady_clock::now();
-        //std::chrono::nanoseconds de_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(de_end - de_begin);
-        //std::cout << "Decompression job initialization time: " << de_duration.count() << "ns" << std::endl;
 
-        //std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         qpl_status status = submit_job(job);
-        //std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-        //std::chrono::nanoseconds duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
-        //std::cout << "Decompression job submission time: " << duration.count() << "ns" << std::endl;
         if (status != QPL_STS_OK) {
-            std::cerr << "Decompression job submission failed." << std::endl;
+            std::cerr << "Decompression job submission failed with error code: " << status << std::endl;
         }
 
-        int queue_index = current_queue;
-        int job_index = queues[current_queue].jobs.size() - 1;
-        current_queue = (current_queue + 1) % num_queues;
-
-        return {queue_index, job_index};
+        return get_just_used_index();
     }
 
-    qpl_status poll_job(int queue_index, int job_index) {
-        /*
-        if (queue_index < 0 || queue_index >= num_queues) {
-            std::cerr << "Invalid queue index." << std::endl;
-            return QPL_STS_INVALID_PARAM_ERR;
-        }
-
-        if (job_index < 0 || job_index >= queues[queue_index].jobs.size()) {
-            std::cerr << "Invalid job index." << std::endl;
-            return QPL_STS_INVALID_PARAM_ERR;
-        }
-        */
-
-        qpl_job* job = queues[queue_index].jobs[job_index];
+    qpl_status poll_job(size_t job_index) {
+        qpl_job* job = jobs[job_index];
         return qpl_check_job(job);
     }
 
-    void add_job_to_queue(qpl_path_t path, int queue_index) {
-        if (queue_index < 0 || queue_index >= num_queues) {
-            std::cerr << "Invalid queue index." << std::endl;
-            return;
-        }
-
-        qpl_job* job = nullptr;
-        auto job_buffer = init_qpl(path, job);
-        if (!job_buffer) {
-            throw std::runtime_error("Failed to initialize QPL job.");
-        }
-        queues[queue_index].job_buffers.push_back(std::move(job_buffer));
-        queues[queue_index].jobs.push_back(job);
-    }
-
-    size_t get_job_compr_size(int queue_index, int job_index) {
-        //assert(qpl_check_job(queues[queue_index].jobs[job_index]) == QPL_STS_OK);
-        return queues[queue_index].jobs[job_index]->total_out;
+    size_t get_job_compr_size(size_t job_index) {
+        return jobs[job_index]->total_out;
     }
 };
 
