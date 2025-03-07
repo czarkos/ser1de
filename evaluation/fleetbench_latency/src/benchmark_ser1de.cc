@@ -21,8 +21,7 @@
 #include"access_message7.h"
 #include"access_message8.h"
 #include"access_message9.h"
-#include"new_ser1de.h"
-//#include"ser1de.h"
+#include"ser1de.h"
 
 #include <tuple>
 
@@ -142,7 +141,7 @@ int benchmark (size_t message_id, size_t setter) {
     std::vector<std::chrono::nanoseconds> proto_serialization_durations, proto_deserialization_durations;
     std::vector<std::chrono::nanoseconds> ser1de_serialization_durations, ser1de_deserialization_durations;
 
-    std::string s("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz0123456789");
+    std::string s("My name is Christos and I am trying to create a respresentative string for the benchmark. I thinkg this is a good example of text that could possibly be used in a real application. It also populates the buffer well.");
     for (size_t i = 0; i < kNofIterations; ++i) {
         switch (message_id) {
             case 0: {

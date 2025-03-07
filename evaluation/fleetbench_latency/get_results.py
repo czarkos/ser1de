@@ -166,12 +166,16 @@ def create_serialization_plot(results):
     plt.errorbar(proto_x, proto_y, yerr=proto_err, fmt='o-', label='Protobuf', alpha=0.7, capsize=3)
     plt.errorbar(ser1de_x, ser1de_y, yerr=ser1de_err, fmt='o-', label='Ser1de', alpha=0.7, capsize=3)
     
-    plt.xlabel('Flat Object Size (bytes)')
-    plt.ylabel('Latency (ns)')
-    plt.title('Serialization Performance')
+    plt.xlabel('Flat Object Size (bytes)', fontsize=16)
+    plt.ylabel('Latency (ns)', fontsize=16)
+    plt.title('Serialization Performance', fontsize=20)
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.savefig('serialization_performance.png')
+    plt.tick_params(axis='both', which='major', labelsize=16)
+    
+    # Create directory if it doesn't exist
+    os.makedirs('latency_plots', exist_ok=True)
+    plt.savefig('latency_plots/serialization_performance.pdf', format='pdf', dpi=300, bbox_inches='tight')
     plt.close()
 
 def create_deserialization_plot(results):
@@ -198,12 +202,16 @@ def create_deserialization_plot(results):
     plt.errorbar(proto_x, proto_y, yerr=proto_err, fmt='o-', label='Protobuf', alpha=0.7, capsize=3)
     plt.errorbar(ser1de_x, ser1de_y, yerr=ser1de_err, fmt='o-', label='Ser1de', alpha=0.7, capsize=3)
     
-    plt.xlabel('Flat Object Size (bytes)')
-    plt.ylabel('Latency (ns)')
-    plt.title('Deserialization Performance')
+    plt.xlabel('Flat Object Size (bytes)', fontsize=16)
+    plt.ylabel('Latency (ns)', fontsize=16)
+    plt.title('Deserialization Performance', fontsize=20)
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.savefig('deserialization_performance.png')
+    plt.tick_params(axis='both', which='major', labelsize=16)
+    
+    # Create directory if it doesn't exist
+    os.makedirs('latency_plots', exist_ok=True)
+    plt.savefig('latency_plots/deserialization_performance.pdf', format='pdf', dpi=300, bbox_inches='tight')
     plt.close()
 
 def create_end2end_plot(results):
@@ -230,12 +238,16 @@ def create_end2end_plot(results):
     plt.errorbar(proto_x, proto_y, yerr=proto_err, fmt='o-', label='Protobuf', alpha=0.7, capsize=3)
     plt.errorbar(ser1de_x, ser1de_y, yerr=ser1de_err, fmt='o-', label='Ser1de', alpha=0.7, capsize=3)
     
-    plt.xlabel('Flat Object Size (bytes)')
-    plt.ylabel('Latency (ns)')
-    plt.title('End-to-End Performance')
+    plt.xlabel('Flat Object Size (bytes)', fontsize=16)
+    plt.ylabel('Latency (ns)', fontsize=16)
+    plt.title('End-to-End Performance', fontsize=20)
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.savefig('end2end_performance.png')
+    plt.tick_params(axis='both', which='major', labelsize=16)
+    
+    # Create directory if it doesn't exist
+    os.makedirs('latency_plots', exist_ok=True)
+    plt.savefig('latency_plots/end2end_performance.pdf', format='pdf', dpi=300, bbox_inches='tight')
     plt.close()
 
 def create_compression_plot(results):
@@ -258,12 +270,16 @@ def create_compression_plot(results):
     plt.plot(proto_x, proto_y, 'o-', label='Protobuf', alpha=0.7)
     plt.plot(ser1de_x, ser1de_y, 'o-', label='Ser1de', alpha=0.7)
     
-    plt.xlabel('Flat Object Size (bytes)')
-    plt.ylabel('Output Size (bytes)')
-    plt.title('Compression Comparison')
+    plt.xlabel('Flat Object Size (bytes)', fontsize=16)
+    plt.ylabel('Output Size (bytes)', fontsize=16)
+    plt.title('Compression Comparison', fontsize=20)
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.savefig('compression_comparison.png')
+    plt.tick_params(axis='both', which='major', labelsize=16)
+    
+    # Create directory if it doesn't exist
+    os.makedirs('latency_plots', exist_ok=True)
+    plt.savefig('latency_plots/compression_comparison.pdf', format='pdf', dpi=300, bbox_inches='tight')
     plt.close()
 
 def create_compression_ratio_plot(results):
@@ -286,12 +302,16 @@ def create_compression_ratio_plot(results):
     plt.plot(proto_x, proto_y, 'o-', label='Protobuf', alpha=0.7)
     plt.plot(ser1de_x, ser1de_y, 'o-', label='Ser1de', alpha=0.7)
     
-    plt.xlabel('Flat Object Size (bytes)')
-    plt.ylabel('Compression Ratio (% of original size)')
-    plt.title('Compression Ratio Comparison')
+    plt.xlabel('Flat Object Size (bytes)', fontsize=16)
+    plt.ylabel('Compression Ratio (% of original size)', fontsize=16)
+    plt.title('Compression Ratio Comparison', fontsize=20)
     plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.savefig('compression_ratio.png')
+    plt.tick_params(axis='both', which='major', labelsize=16)
+    
+    # Create directory if it doesn't exist
+    os.makedirs('latency_plots', exist_ok=True)
+    plt.savefig('latency_plots/compression_ratio.pdf', format='pdf', dpi=300, bbox_inches='tight')
     plt.close()
 
 def create_speedup_latency_plot(results):
@@ -355,12 +375,19 @@ def create_speedup_latency_plot(results):
         plt.bar(x + width/2, ser1de_ser, width, label='Ser1de Ser', color='darkred')
         plt.bar(x + 3*width/2, ser1de_deser, width, label='Ser1de Deser', color='salmon')
     
-    plt.xlabel('Message Type')
-    plt.ylabel('Latency (ns)')
-    plt.title('Serialization and Deserialization Latencies by Message Type')
+    plt.xlabel('Message Type', fontsize=16)
+    plt.ylabel('Latency (ns)', fontsize=16)
+    plt.title('Serialization and Deserialization Latencies by Message Type', fontsize=20)
     plt.xticks(x, messages)
     plt.legend()
     plt.grid(True, alpha=0.3)
+    plt.tick_params(axis='both', which='major', labelsize=16)
+    
+    # Create directory if it doesn't exist
+    os.makedirs('latency_plots', exist_ok=True)
+    
+    # Save first plot
+    plt.savefig('latency_plots/ser_deser_latency_comparison.pdf', format='pdf', dpi=300, bbox_inches='tight')
     
     # Add a second plot for end-to-end latencies
     plt.figure(figsize=(10, 6))
@@ -371,14 +398,15 @@ def create_speedup_latency_plot(results):
         plt.bar(x - width/2, proto_end2end, width, label='Protobuf End2End', color='blue')
         plt.bar(x + width/2, ser1de_end2end, width, label='Ser1de End2End', color='red')
     
-    plt.xlabel('Message Type')
-    plt.ylabel('Latency (ns)')
-    plt.title('End-to-End Latencies by Message Type')
+    plt.xlabel('Message Type', fontsize=16)
+    plt.ylabel('Latency (ns)', fontsize=16)
+    plt.title('End-to-End Latencies by Message Type', fontsize=20)
     plt.xticks(x, messages)
     plt.legend()
     plt.grid(True, alpha=0.3)
+    plt.tick_params(axis='both', which='major', labelsize=16)
     
-    plt.savefig('latency_comparison.png')
+    plt.savefig('latency_plots/end2end_latency_comparison.pdf', format='pdf', dpi=300, bbox_inches='tight')
     plt.close()
 
 def create_compression_percentage_plot(results):
@@ -411,12 +439,13 @@ def create_compression_percentage_plot(results):
     plt.bar(x - width/2, proto_compression, width, label='Protobuf', color='blue')
     plt.bar(x + width/2, ser1de_compression, width, label='Ser1de', color='red')
     
-    plt.xlabel('Message Type')
-    plt.ylabel('Compression Ratio (%)')
-    plt.title('Compression Ratio by Message Type (higher is better)')
+    plt.xlabel('Message Type', fontsize=16)
+    plt.ylabel('Compression Ratio (%)', fontsize=16)
+    plt.title('Compression Ratio by Message Type (higher is better)', fontsize=20)
     plt.xticks(x, messages)
     plt.legend()
     plt.grid(True, alpha=0.3)
+    plt.tick_params(axis='both', which='major', labelsize=16)
     
     # Add a horizontal line at 0% for reference
     plt.axhline(y=0, color='black', linestyle='--', alpha=0.5)
@@ -430,7 +459,9 @@ def create_compression_percentage_plot(results):
         if v < 0:
             plt.text(i + width/2, v - 5, f"{v:.1f}%", ha='center', color='white', fontweight='bold')
     
-    plt.savefig('compression_ratio_percentage.png')
+    # Create directory if it doesn't exist
+    os.makedirs('latency_plots', exist_ok=True)
+    plt.savefig('latency_plots/compression_ratio_percentage.pdf', format='pdf', dpi=300, bbox_inches='tight')
     plt.close()
 
 def save_detailed_results(results, filename='detailed_results.json'):
@@ -452,6 +483,9 @@ def main():
     parser.add_argument('--runs', '-r', type=int, default=5,
                         help='Number of benchmark runs to perform (default: 5)')
     args = parser.parse_args()
+    
+    # Create output directory
+    os.makedirs('latency_plots', exist_ok=True)
     
     # Get benchmark data either from file or by running the benchmark
     if args.input:
@@ -520,7 +554,7 @@ def main():
     print(f"Successfully processed {len(aggregated_results)} benchmark results across {len(all_results)} runs.")
     
     # Save detailed results including standard deviations
-    save_detailed_results(aggregated_results)
+    save_detailed_results(aggregated_results, 'latency_plots/detailed_results.json')
     
     # Sort results by flat size for better visualization
     aggregated_results.sort(key=lambda x: x['flat_size'])
@@ -534,14 +568,15 @@ def main():
     create_speedup_latency_plot(aggregated_results)
     create_compression_percentage_plot(aggregated_results)
     
-    print("Plots have been saved as:")
-    print("- serialization_performance.png")
-    print("- deserialization_performance.png")
-    print("- end2end_performance.png")
-    print("- compression_comparison.png")
-    print("- compression_ratio.png")
-    print("- latency_comparison.png")
-    print("- compression_ratio_percentage.png")
+    print("Plots have been saved in the 'latency_plots' directory as:")
+    print("- serialization_performance.pdf")
+    print("- deserialization_performance.pdf")
+    print("- end2end_performance.pdf")
+    print("- compression_comparison.pdf")
+    print("- compression_ratio.pdf")
+    print("- ser_deser_latency_comparison.pdf")
+    print("- end2end_latency_comparison.pdf")
+    print("- compression_ratio_percentage.pdf")
 
 if __name__ == "__main__":
     main()
