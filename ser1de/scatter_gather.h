@@ -45,7 +45,8 @@ public:
     // Memcpy versions
     int GatherWithMemCpy(const Schema& schema, uint8_t* out, size_t* out_size);
     int ScatterWithMemCpy(const uint8_t* in, const Schema& schema);
-    int GatherWithMemCpy(const std::vector<uint8_t*>& ptrs_list, const std::vector<size_t> sizes_list, uint8_t* out, size_t* out_size);
+    int GatherWithMemCpy(const std::vector<uint8_t*>& ptrs_list, const std::vector<size_t> sizes_list, uint8_t* out, uint32_t* out_size);
+    //int GatherWithMemCpy(const std::vector<uint8_t*>& ptrs_list, const std::vector<size_t> sizes_list, uint8_t* out, size_t* out_size);
     int ScatterWithMemCpy(const uint8_t* in, const std::vector<uint8_t*>& ptrs_list, const std::vector<size_t> sizes_list); 
     void UpdateScatterSchema(Schema& schema, std::vector<size_t> sizes);
 
@@ -481,7 +482,8 @@ int ScatterGather::GatherWithMemCpy(const Schema& schema, uint8_t* out, size_t* 
     return 0;
 }
 
-int ScatterGather::GatherWithMemCpy(const std::vector<uint8_t*>& ptrs_list, const std::vector<size_t> sizes_list, uint8_t* out, size_t* out_size) {
+//int ScatterGather::GatherWithMemCpy(const std::vector<uint8_t*>& ptrs_list, const std::vector<size_t> sizes_list, uint8_t* out, size_t* out_size) {
+int ScatterGather::GatherWithMemCpy(const std::vector<uint8_t*>& ptrs_list, const std::vector<size_t> sizes_list, uint8_t* out, uint32_t* out_size) {
     size_t out_offset = 0;
     size_t num_ptrs = ptrs_list.size();
     size_t num_sizes = sizes_list.size();

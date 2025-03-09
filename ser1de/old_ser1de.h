@@ -1,7 +1,7 @@
 #ifndef SER1DE_H
 #define SER1DE_H
 
-#include"iaa_comp.h"
+#include"old_iaa_comp.h"
 #include"sw_only_scatter_gather.h"
 #include <google/protobuf/message.h>
 #include <string>
@@ -20,6 +20,7 @@ public:
 private:
     // IAA
     IAAComp* iaa_comp;
+    IAAComp* iaa_comp_sw;
     // DSA
     ScatterGather* scagatherer;
     // Utility variables
@@ -80,6 +81,7 @@ Ser1de::Ser1de(std::string execution_path) {
 // Default constructor initializes IAA with hardware path
 Ser1de::Ser1de() {
     iaa_comp = new IAAComp(qpl_path_hardware, 1, 16);
+    iaa_comp_sw = new IAAComp(qpl_path_software, 1, 16);
     //scagatherer = new ScatterGather(DML_PATH_HW, 350);
     scagatherer = new ScatterGather();
 
@@ -106,7 +108,7 @@ void Ser1de::SerializeToString(google::protobuf::Message& message, std::string* 
         scagatherer->GatherWithMemCpy(ser_ptrs, ser_sizes, ser_gather_buffer.data(), &ser_gather_out_size);
         // <------------ COMPRESS ------>
         //iaa_comp->compress_non_blocking(ser_sizes);
-        iaa_comp->compress_blocking(ser_gather_buffer.data(), ser_gather_out_size, ser_compressed_out.get(), ser_gather_out_size+512, &serComprOutputSize);
+        iaa_comp_sw->compress_blocking(ser_gather_buffer.data(), ser_gather_out_size, ser_compressed_out.get(), ser_gather_out_size+512, &serComprOutputSize);
         // <------------ MAKE HEADER ------>
         size_t num_sizes = ser_sizes.size();
         make_header(*output, ser_gather_out_size, serComprOutputSize, num_sizes, ser_sizes, ser_compressed_out);
@@ -123,9 +125,9 @@ void Ser1de::ParseFromString(const std::string& data, google::protobuf::Message*
     // <------------ DECOMPRESS ------>
     std::tie(queue_index, job_index) = iaa_comp->decompress_non_blocking(const_cast<uint8_t*>(deser_compressed), deserComprOutputSize, deser_decompress_out.data(), deser_gather_out_size);
     // <------------ ALLOCATE AND CREATE SCATTER SCHEMA ------>
-    message->allocate_from_sizes(deser_sizes_for_scatter);
-    message->generate_scatter_ptrs(deser_ptrs);
-    //message->generate_scatter_ptrs_and_allocate_from_sizes(deser_ptrs, deser_sizes_for_scatter);
+    //message->allocate_from_sizes(deser_sizes_for_scatter);
+    //message->generate_scatter_ptrs(deser_ptrs);
+    message->generate_scatter_ptrs_and_allocate_from_sizes(deser_ptrs, deser_sizes_for_scatter);
     // <------------ SCATTER ------>
     // first make sure decompression is finished
     while (iaa_comp->poll_job(queue_index, job_index) != QPL_STS_OK){}
