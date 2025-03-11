@@ -33,8 +33,14 @@
 
 static constexpr size_t kNofWarmupIterations = 10;
 
+enum BenchmarkType {
+    PROTO_SERIALIZE = 0,
+    PROTO_DESERIALIZE = 1,
+    SER1DE_SERIALIZE = 2,
+    SER1DE_DESERIALIZE = 3
+};
+
 inline void benchmark_serialize(std::vector<google::protobuf::Message*>& messages, std::vector<std::string>& ser_outs, size_t num_requests, std::vector<std::chrono::microseconds>& latencies) {
-    std::cout << "protobuf serialize" << std::endl;
     // Warmup iterations
     for (size_t i = 0; i < kNofWarmupIterations; i++) {
         messages[i % num_requests]->SerializeToString(&ser_outs[i % num_requests]);
@@ -67,7 +73,6 @@ inline void benchmark_serialize(std::vector<google::protobuf::Message*>& message
 }
 
 inline void benchmark_deserialize(std::vector<std::string>& ser_outs, std::vector<google::protobuf::Message*>& deser_messages_out, size_t num_requests, std::vector<std::chrono::microseconds>& latencies) {
-    std::cout << "protobuf deserialize" << std::endl;
     // Warmup iterations
     for (size_t i = 0; i < kNofWarmupIterations; i++) {
         deser_messages_out[i % num_requests]->ParseFromString(ser_outs[i % num_requests]);
@@ -88,8 +93,7 @@ inline void benchmark_deserialize(std::vector<std::string>& ser_outs, std::vecto
     }
 }
 
-inline size_t benchmark_ser1de_serialize(Ser1de &ser1de, std::vector<google::protobuf::Message*>& messages, std::vector<std::string>& ser_outs, size_t num_requests, std::vector<std::chrono::microseconds>& latencies) {
-    std::cout << "ser1de serialize" << std::endl;
+inline void benchmark_ser1de_serialize(Ser1de &ser1de, std::vector<std::string>& ser_outs, std::vector<google::protobuf::Message*>& messages, size_t num_requests, std::vector<std::chrono::microseconds>& latencies) {
     // Warmup iterations
     for (size_t i = 0; i < kNofWarmupIterations; i++) {
         ser1de.SerializeToString(*messages[i % num_requests], &ser_outs[i % num_requests]);
@@ -108,12 +112,9 @@ inline size_t benchmark_ser1de_serialize(Ser1de &ser1de, std::vector<google::pro
         latencies[i] = std::chrono::duration_cast<std::chrono::microseconds>(req_end_time - proposed_start_time);
         proposed_start_time += std::chrono::microseconds(interval);
     }
-
-    return ser1de.get_ser_gather_out_size();
 }
 
 inline void benchmark_ser1de_deserialize(Ser1de &ser1de, std::vector<std::string>& ser_outs, std::vector<google::protobuf::Message*>& deser_messages_out, size_t num_requests, std::vector<std::chrono::microseconds>& latencies) {
-    std::cout << "ser1de deserialize" << std::endl;
     // Warmup iterations
     for (size_t i = 0; i < kNofWarmupIterations; i++) {
         ser1de.ParseFromString(ser_outs[i % num_requests], deser_messages_out[i % num_requests]);
@@ -155,7 +156,7 @@ void compare_messages(std::vector<google::protobuf::Message*>& messages, std::ve
     assert(all_correct);
 }
 
-int benchmark (size_t num_requests) {
+int benchmark(size_t num_requests, BenchmarkType type) {
     // Verify that the version of the library that we linked against is
     // compatible with the version of the headers we compiled against.
     GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -170,7 +171,8 @@ int benchmark (size_t num_requests) {
     std::vector<std::string> ser1de_ser_outs(num_requests);
 
     // Initialize the protos
-    std::string s("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz0123456789");
+    std::string s(1<<20, 'a');
+    // define s as 1<<20 'a's
     for (size_t i = 0; i < num_requests; i += 26) {
         // Message 0
         google::protobuf::Message* m0_1 = new fleetbench::proto::Message0();
@@ -395,12 +397,31 @@ int benchmark (size_t num_requests) {
     std::vector<std::chrono::microseconds> ser1de_ser_latencies(num_requests);
     std::vector<std::chrono::microseconds> ser1de_deser_latencies(num_requests);
 
-    benchmark_serialize(messages, proto_ser_outs, num_requests, proto_ser_latencies);
-    benchmark_deserialize(proto_ser_outs, proto_deser_messages_out, num_requests, proto_deser_latencies);
-    benchmark_ser1de_serialize(ser1de, messages, ser1de_ser_outs, num_requests, ser1de_ser_latencies);
-    benchmark_ser1de_deserialize(ser1de, ser1de_ser_outs, ser1de_deser_messages_out, num_requests, ser1de_deser_latencies);
+    std::vector<std::chrono::microseconds> latencies(num_requests);
+    
+    // Replace the four benchmark calls with a switch statement
+    switch (type) {
+        case PROTO_SERIALIZE:
+            benchmark_serialize(messages, proto_ser_outs, num_requests, latencies);
+            std::cout << "\nTail Latencies (microseconds) - Proto Serialize:" << std::endl;
+            break;
+        case PROTO_DESERIALIZE:
+            benchmark_serialize(messages, proto_ser_outs, num_requests, proto_ser_latencies); // Need to serialize first
+            benchmark_deserialize(proto_ser_outs, proto_deser_messages_out, num_requests, latencies);
+            std::cout << "\nTail Latencies (microseconds) - Proto Deserialize:" << std::endl;
+            break;
+        case SER1DE_SERIALIZE:
+            benchmark_ser1de_serialize(ser1de, ser1de_ser_outs, messages, num_requests, latencies);
+            std::cout << "\nTail Latencies (microseconds) - Ser1de Serialize:" << std::endl;
+            break;
+        case SER1DE_DESERIALIZE:
+            benchmark_ser1de_serialize(ser1de, ser1de_ser_outs, messages, num_requests, ser1de_ser_latencies); // Need to serialize first
+            benchmark_ser1de_deserialize(ser1de, ser1de_ser_outs, ser1de_deser_messages_out, num_requests, latencies);
+            std::cout << "\nTail Latencies (microseconds) - Ser1de Deserialize:" << std::endl;
+            break;
+    }
 
-    // Calculate and print tail latencies
+    // Calculate and print tail latencies for the selected operation
     auto calculate_percentile = [](std::vector<std::chrono::microseconds>& latencies, double percentile) {
         std::vector<long long> sorted_latencies;
         sorted_latencies.reserve(latencies.size());
@@ -412,54 +433,40 @@ int benchmark (size_t num_requests) {
         return sorted_latencies[idx];
     };
 
-    std::cout << "\nTail Latencies (microseconds):" << std::endl;
-    std::cout << std::setw(20) << "Operation" << std::setw(15) << "p50" << std::setw(15) << "p95" << std::setw(15) << "p99" << std::endl;
-    std::cout << std::string(65, '-') << std::endl;
-    
-    std::cout << std::setw(20) << "Proto Serialize" 
-              << std::setw(15) << calculate_percentile(proto_ser_latencies, 0.50)
-              << std::setw(15) << calculate_percentile(proto_ser_latencies, 0.95)
-              << std::setw(15) << calculate_percentile(proto_ser_latencies, 0.99) << std::endl;
-    
-    std::cout << std::setw(20) << "Proto Deserialize"
-              << std::setw(15) << calculate_percentile(proto_deser_latencies, 0.50)
-              << std::setw(15) << calculate_percentile(proto_deser_latencies, 0.95)
-              << std::setw(15) << calculate_percentile(proto_deser_latencies, 0.99) << std::endl;
-    
-    std::cout << std::setw(20) << "Ser1de Serialize"
-              << std::setw(15) << calculate_percentile(ser1de_ser_latencies, 0.50)
-              << std::setw(15) << calculate_percentile(ser1de_ser_latencies, 0.95)
-              << std::setw(15) << calculate_percentile(ser1de_ser_latencies, 0.99) << std::endl;
-    
-    std::cout << std::setw(20) << "Ser1de Deserialize"
-              << std::setw(15) << calculate_percentile(ser1de_deser_latencies, 0.50)
-              << std::setw(15) << calculate_percentile(ser1de_deser_latencies, 0.95)
-              << std::setw(15) << calculate_percentile(ser1de_deser_latencies, 0.99) << std::endl;
+    std::cout << std::setw(15) << "p50" << std::setw(15) << "p95" << std::setw(15) << "p99" << std::endl;
+    std::cout << std::string(45, '-') << std::endl;
+    std::cout << std::setw(15) << calculate_percentile(latencies, 0.50)
+              << std::setw(15) << calculate_percentile(latencies, 0.95)
+              << std::setw(15) << calculate_percentile(latencies, 0.99) << std::endl;
 
     return 0;
 }
 
-int main () {
-    benchmark(100);
-    std::cerr << "Finished 100 requests" << std::endl;
-    benchmark(1000);
-    std::cerr << "Finished 1000 requests" << std::endl;
-    benchmark(2000);
-    std::cerr << "Finished 2000 requests" << std::endl;
-    benchmark(3000);
-    std::cerr << "Finished 3000 requests" << std::endl;
-    benchmark(4000);
-    std::cerr << "Finished 4000 requests" << std::endl;
-    benchmark(5000);
-    std::cerr << "Finished 5000 requests" << std::endl;
-    benchmark(10000);
-    std::cerr << "Finished 10000 requests" << std::endl;
-    benchmark(15000);
-    std::cerr << "Finished 15000 requests" << std::endl;
-    benchmark(20000);
-    std::cerr << "Finished 20000 requests" << std::endl;
-    benchmark(25000);
-    std::cerr << "Finished 25000 requests" << std::endl;
-    benchmark(30000);
-    std::cerr << "Finished 30000 requests" << std::endl;
+int main() {
+    std::vector<BenchmarkType> types = {
+        PROTO_SERIALIZE,
+        PROTO_DESERIALIZE,
+        SER1DE_SERIALIZE,
+        SER1DE_DESERIALIZE
+    };
+
+    // Print CSV header
+    std::cout << "type,rps,p50,p95,p99" << std::endl;
+
+    // Different RPS ranges for each type
+    std::map<BenchmarkType, std::pair<int, int>> rps_ranges = {
+        {PROTO_SERIALIZE, {7000, 9500}},      // 40k-80k requests
+        {PROTO_DESERIALIZE, {4000, 7000}},    // 20k-60k requests
+        {SER1DE_SERIALIZE, {7500, 10000}},    // 60k-100k requests
+        {SER1DE_DESERIALIZE, {5000, 8000}}    // 30k-70k requests
+    };
+
+    for (auto type : types) {
+        int start_rps = rps_ranges[type].first;
+        int end_rps = rps_ranges[type].second;
+        for (int rps = start_rps; rps <= end_rps; rps += 500) {
+            benchmark(rps * 10, type);  // Convert RPS to request count (10 second duration)
+        }
+    }
+    return 0;
 }
