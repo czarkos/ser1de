@@ -2,6 +2,7 @@
 #include <numeric>
 #include <cmath>
 #include <iomanip>
+#include <thread>
 
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/text_format.h>
@@ -32,7 +33,8 @@
 
 static constexpr size_t kNofWarmupIterations = 10;
 
-inline void benchmark_serialize(std::vector<google::protobuf::Message*>& messages, std::vector<std::string>& ser_outs, size_t num_requests, std::vector<std::chrono::nanoseconds>& latencies) {
+inline void benchmark_serialize(std::vector<google::protobuf::Message*>& messages, std::vector<std::string>& ser_outs, size_t num_requests, std::vector<std::chrono::microseconds>& latencies) {
+    std::cout << "protobuf serialize" << std::endl;
     // Warmup iterations
     for (size_t i = 0; i < kNofWarmupIterations; i++) {
         messages[i % num_requests]->SerializeToString(&ser_outs[i % num_requests]);
@@ -42,15 +44,14 @@ inline void benchmark_serialize(std::vector<google::protobuf::Message*>& message
     size_t interval = 1000000 / rps;
     auto benchmark_start_time = std::chrono::steady_clock::now();
     auto proposed_start_time = benchmark_start_time;
-    while (std::chrono::steady_clock::now() - benchmark_start_time < std::chrono::seconds(10)) {
+    for (int i = 0; i < num_requests; i++) {
         while (std::chrono::steady_clock::now() < proposed_start_time) {
-            std::this_thread::sleep_for(std::chrono::microseconds(interval/100));
-        }›
-        // auto req_start_time = std::chrono::steady_clock::now();
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
+        }
         messages[i]->SerializeToString(&ser_outs[i]);
         auto req_end_time = std::chrono::steady_clock::now();
-        latencies[i] = std::chrono::duration_cast<std::chrono::nanoseconds>(req_end_time - proposed_start_time);
-        proposed_start_time += interval;
+        latencies[i] = std::chrono::duration_cast<std::chrono::microseconds>(req_end_time - proposed_start_time);
+        proposed_start_time += std::chrono::microseconds(interval);
     }
 
     // auto start_time = std::chrono::steady_clock::now();
@@ -58,14 +59,15 @@ inline void benchmark_serialize(std::vector<google::protobuf::Message*>& message
     //     auto req_start = std::chrono::steady_clock::now();
     //     messages[i]->SerializeToString(&ser_outs[i]);
     //     auto req_end = std::chrono::steady_clock::now();
-    //     latencies[i] = std::chrono::duration_cast<std::chrono::nanoseconds>(req_end - req_start);
+    //     latencies[i] = std::chrono::duration_cast<std::chrono::microseconds>(req_end - req_start);
     // }
     // // auto end_time = std::chrono::steady_clock::now();
-    // // auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
-    // //std::cout << "Protobuf Serialize: " << duration.count() << " ns" << std::endl;
+    // // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+    // //std::cout << "Protobuf Serialize: " << duration.count() << " us" << std::endl;
 }
 
-inline void benchmark_deserialize(std::vector<std::string>& ser_outs, std::vector<google::protobuf::Message*>& deser_messages_out, size_t num_requests, std::vector<std::chrono::nanoseconds>& latencies) {
+inline void benchmark_deserialize(std::vector<std::string>& ser_outs, std::vector<google::protobuf::Message*>& deser_messages_out, size_t num_requests, std::vector<std::chrono::microseconds>& latencies) {
+    std::cout << "protobuf deserialize" << std::endl;
     // Warmup iterations
     for (size_t i = 0; i < kNofWarmupIterations; i++) {
         deser_messages_out[i % num_requests]->ParseFromString(ser_outs[i % num_requests]);
@@ -75,18 +77,19 @@ inline void benchmark_deserialize(std::vector<std::string>& ser_outs, std::vecto
     size_t interval = 1000000 / rps;
     auto benchmark_start_time = std::chrono::steady_clock::now();
     auto proposed_start_time = benchmark_start_time;
-    while (std::chrono::steady_clock::now() - benchmark_start_time < std::chrono::seconds(10)) {
+    for (int i = 0; i < num_requests; i++) {
         while (std::chrono::steady_clock::now() < proposed_start_time) {
-            std::this_thread::sleep_for(std::chrono::microseconds(interval/100));
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
         }
         deser_messages_out[i]->ParseFromString(ser_outs[i]);
         auto req_end_time = std::chrono::steady_clock::now();
-        latencies[i] = std::chrono::duration_cast<std::chrono::nanoseconds>(req_end_time - proposed_start_time);
-        proposed_start_time += interval;
+        latencies[i] = std::chrono::duration_cast<std::chrono::microseconds>(req_end_time - proposed_start_time);
+        proposed_start_time += std::chrono::microseconds(interval);
     }
 }
 
-inline size_t benchmark_ser1de_serialize(Ser1de &ser1de, std::vector<google::protobuf::Message*>& messages, std::vector<std::string>& ser_outs, size_t num_requests, std::vector<std::chrono::nanoseconds>& latencies) {
+inline size_t benchmark_ser1de_serialize(Ser1de &ser1de, std::vector<google::protobuf::Message*>& messages, std::vector<std::string>& ser_outs, size_t num_requests, std::vector<std::chrono::microseconds>& latencies) {
+    std::cout << "ser1de serialize" << std::endl;
     // Warmup iterations
     for (size_t i = 0; i < kNofWarmupIterations; i++) {
         ser1de.SerializeToString(*messages[i % num_requests], &ser_outs[i % num_requests]);
@@ -96,20 +99,21 @@ inline size_t benchmark_ser1de_serialize(Ser1de &ser1de, std::vector<google::pro
     size_t interval = 1000000 / rps;
     auto benchmark_start_time = std::chrono::steady_clock::now();
     auto proposed_start_time = benchmark_start_time;
-    while (std::chrono::steady_clock::now() - benchmark_start_time < std::chrono::seconds(10)) {
+    for (int i = 0; i < num_requests; i++) {
         while (std::chrono::steady_clock::now() < proposed_start_time) {
-            std::this_thread::sleep_for(std::chrono::microseconds(interval/100));
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
         }
         ser1de.SerializeToString(*messages[i], &ser_outs[i]);
         auto req_end_time = std::chrono::steady_clock::now();
-        latencies[i] = std::chrono::duration_cast<std::chrono::nanoseconds>(req_end_time - proposed_start_time);
-        proposed_start_time += interval;
+        latencies[i] = std::chrono::duration_cast<std::chrono::microseconds>(req_end_time - proposed_start_time);
+        proposed_start_time += std::chrono::microseconds(interval);
     }
 
     return ser1de.get_ser_gather_out_size();
 }
 
-inline void benchmark_ser1de_deserialize(Ser1de &ser1de, std::vector<std::string>& ser_outs, std::vector<google::protobuf::Message*>& deser_messages_out, size_t num_requests, std::vector<std::chrono::nanoseconds>& latencies) {
+inline void benchmark_ser1de_deserialize(Ser1de &ser1de, std::vector<std::string>& ser_outs, std::vector<google::protobuf::Message*>& deser_messages_out, size_t num_requests, std::vector<std::chrono::microseconds>& latencies) {
+    std::cout << "ser1de deserialize" << std::endl;
     // Warmup iterations
     for (size_t i = 0; i < kNofWarmupIterations; i++) {
         ser1de.ParseFromString(ser_outs[i % num_requests], deser_messages_out[i % num_requests]);
@@ -119,14 +123,14 @@ inline void benchmark_ser1de_deserialize(Ser1de &ser1de, std::vector<std::string
     size_t interval = 1000000 / rps;
     auto benchmark_start_time = std::chrono::steady_clock::now();
     auto proposed_start_time = benchmark_start_time;
-    while (std::chrono::steady_clock::now() - benchmark_start_time < std::chrono::seconds(10)) {
+    for (int i = 0; i < num_requests; i++) {
         while (std::chrono::steady_clock::now() < proposed_start_time) {
-            std::this_thread::sleep_for(std::chrono::microseconds(interval/100));
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
         }
         ser1de.ParseFromString(ser_outs[i], deser_messages_out[i]);
         auto req_end_time = std::chrono::steady_clock::now();
-        latencies[i] = std::chrono::duration_cast<std::chrono::nanoseconds>(req_end_time - proposed_start_time);
-        proposed_start_time += interval;
+        latencies[i] = std::chrono::duration_cast<std::chrono::microseconds>(req_end_time - proposed_start_time);
+        proposed_start_time += std::chrono::microseconds(interval);
     }
 }
 
@@ -383,23 +387,55 @@ int benchmark (size_t num_requests) {
     }
     
     std::cout << "-----------------------------------------------------" << std::endl;
-    std::cout << "\t\tNumber of requests: " << num_requests << std::endl;
+    std::cout << "\tRequest per Second: " << num_requests/10 << " for 10 Seconds" << std::endl;
     std::cout << "-----------------------------------------------------" << std::endl;
 
-    std::vector<std::chrono::nanoseconds> proto_ser_latencies(num_requests);
-    std::vector<std::chrono::nanoseconds> proto_deser_latencies(num_requests);
-    std::vector<std::chrono::nanoseconds> ser1de_ser_latencies(num_requests);
-    std::vector<std::chrono::nanoseconds> ser1de_deser_latencies(num_requests);
+    std::vector<std::chrono::microseconds> proto_ser_latencies(num_requests);
+    std::vector<std::chrono::microseconds> proto_deser_latencies(num_requests);
+    std::vector<std::chrono::microseconds> ser1de_ser_latencies(num_requests);
+    std::vector<std::chrono::microseconds> ser1de_deser_latencies(num_requests);
 
-    benchmark_serialize(messages, proto_ser_outs, num_requests/10, proto_ser_latencies);
-    benchmark_deserialize(proto_ser_outs, proto_deser_messages_out, num_requests/10, proto_deser_latencies);
-    benchmark_ser1de_serialize(ser1de, messages, ser1de_ser_outs, num_requests/10, ser1de_ser_latencies);
-    benchmark_ser1de_deserialize(ser1de, ser1de_ser_outs, ser1de_deser_messages_out, num_requests/10, ser1de_deser_latencies);
+    benchmark_serialize(messages, proto_ser_outs, num_requests, proto_ser_latencies);
+    benchmark_deserialize(proto_ser_outs, proto_deser_messages_out, num_requests, proto_deser_latencies);
+    benchmark_ser1de_serialize(ser1de, messages, ser1de_ser_outs, num_requests, ser1de_ser_latencies);
+    benchmark_ser1de_deserialize(ser1de, ser1de_ser_outs, ser1de_deser_messages_out, num_requests, ser1de_deser_latencies);
 
-    std::cout << "Requests, Protobuf Serialize, Protobuf Deserialize, Ser1de Serialize, Ser1de Deserialize" << std::endl;
-    for (size_t i = 0; i < num_requests; i++) {
-        std::cout << num_requests << ", " << proto_ser_latencies[i].count() << ", " << proto_deser_latencies[i].count() << ", " << ser1de_ser_latencies[i].count() << ", " << ser1de_deser_latencies[i].count() << std::endl;
-    }
+    // Calculate and print tail latencies
+    auto calculate_percentile = [](std::vector<std::chrono::microseconds>& latencies, double percentile) {
+        std::vector<long long> sorted_latencies;
+        sorted_latencies.reserve(latencies.size());
+        for (const auto& lat : latencies) {
+            sorted_latencies.push_back(lat.count());
+        }
+        std::sort(sorted_latencies.begin(), sorted_latencies.end());
+        size_t idx = static_cast<size_t>(percentile * sorted_latencies.size());
+        return sorted_latencies[idx];
+    };
+
+    std::cout << "\nTail Latencies (microseconds):" << std::endl;
+    std::cout << std::setw(20) << "Operation" << std::setw(15) << "p50" << std::setw(15) << "p95" << std::setw(15) << "p99" << std::endl;
+    std::cout << std::string(65, '-') << std::endl;
+    
+    std::cout << std::setw(20) << "Proto Serialize" 
+              << std::setw(15) << calculate_percentile(proto_ser_latencies, 0.50)
+              << std::setw(15) << calculate_percentile(proto_ser_latencies, 0.95)
+              << std::setw(15) << calculate_percentile(proto_ser_latencies, 0.99) << std::endl;
+    
+    std::cout << std::setw(20) << "Proto Deserialize"
+              << std::setw(15) << calculate_percentile(proto_deser_latencies, 0.50)
+              << std::setw(15) << calculate_percentile(proto_deser_latencies, 0.95)
+              << std::setw(15) << calculate_percentile(proto_deser_latencies, 0.99) << std::endl;
+    
+    std::cout << std::setw(20) << "Ser1de Serialize"
+              << std::setw(15) << calculate_percentile(ser1de_ser_latencies, 0.50)
+              << std::setw(15) << calculate_percentile(ser1de_ser_latencies, 0.95)
+              << std::setw(15) << calculate_percentile(ser1de_ser_latencies, 0.99) << std::endl;
+    
+    std::cout << std::setw(20) << "Ser1de Deserialize"
+              << std::setw(15) << calculate_percentile(ser1de_deser_latencies, 0.50)
+              << std::setw(15) << calculate_percentile(ser1de_deser_latencies, 0.95)
+              << std::setw(15) << calculate_percentile(ser1de_deser_latencies, 0.99) << std::endl;
+
     return 0;
 }
 
