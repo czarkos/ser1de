@@ -1,8 +1,3 @@
-#include <algorithm>
-#include <numeric>
-#include <cmath>
-#include <iomanip>
-
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/text_format.h>
 
@@ -30,80 +25,64 @@
 
 #include <tuple>
 
-static constexpr size_t kNofWarmupIterations = 10;
+// Define benchmark duration in seconds
+static constexpr std::chrono::seconds kBenchmarkDuration(10);
 
-inline void benchmark_serialize(std::vector<google::protobuf::Message*>& messages, std::vector<std::string>& ser_outs, size_t num_requests, std::vector<std::chrono::nanoseconds>& latencies) {
-    // Warmup iterations
-    for (size_t i = 0; i < kNofWarmupIterations; i++) {
-        messages[i % num_requests]->SerializeToString(&ser_outs[i % num_requests]);
-    }
-    
+inline void benchmark_serialize(std::vector<google::protobuf::Message*>& messages, std::vector<std::string>& ser_outs) {
+    size_t operations = 0;
     auto start_time = std::chrono::steady_clock::now();
-    for (size_t i = 0; i < num_requests; i++) {
-        auto req_start = std::chrono::steady_clock::now();
+    auto end_time = start_time + kBenchmarkDuration;
+
+    while (std::chrono::steady_clock::now() < end_time) {
+        size_t i = operations % messages.size();
         messages[i]->SerializeToString(&ser_outs[i]);
-        auto req_end = std::chrono::steady_clock::now();
-        latencies[i] = std::chrono::duration_cast<std::chrono::nanoseconds>(req_end - req_start);
+        operations++;
     }
-    auto end_time = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
-    //std::cout << "Protobuf Serialize: " << duration.count() << " ns" << std::endl;
+
+    std::cout << "Protobuf Serialize throughput: " << operations / kBenchmarkDuration.count() << " ops/s" << std::endl;
 }
 
-inline void benchmark_deserialize(std::vector<std::string>& ser_outs, std::vector<google::protobuf::Message*>& deser_messages_out, size_t num_requests, std::vector<std::chrono::nanoseconds>& latencies) {
-    // Warmup iterations
-    for (size_t i = 0; i < kNofWarmupIterations; i++) {
-        deser_messages_out[i % num_requests]->ParseFromString(ser_outs[i % num_requests]);
-    }
-    
+inline void benchmark_deserialize(std::vector<std::string>& ser_outs, std::vector<google::protobuf::Message*>& deser_messages_out) {
+    size_t operations = 0;
     auto start_time = std::chrono::steady_clock::now();
-    for (size_t i = 0; i < num_requests; i++) {
-        auto req_start = std::chrono::steady_clock::now();
+    auto end_time = start_time + kBenchmarkDuration;
+
+    while (std::chrono::steady_clock::now() < end_time) {
+        size_t i = operations % deser_messages_out.size();
         deser_messages_out[i]->ParseFromString(ser_outs[i]);
-        auto req_end = std::chrono::steady_clock::now();
-        latencies[i] = std::chrono::duration_cast<std::chrono::nanoseconds>(req_end - req_start);
+        operations++;
     }
-    auto end_time = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
-    //std::cout << "Protobuf Deserialize: " << duration.count() << " ns" << std::endl;
+
+    std::cout << "Protobuf Deserialize throughput: " << operations / kBenchmarkDuration.count() << " ops/s" << std::endl;
 }
 
-inline size_t benchmark_ser1de_serialize(Ser1de &ser1de, std::vector<google::protobuf::Message*>& messages, std::vector<std::string>& ser_outs, size_t num_requests, std::vector<std::chrono::nanoseconds>& latencies) {
-    // Warmup iterations
-    for (size_t i = 0; i < kNofWarmupIterations; i++) {
-        ser1de.SerializeToString(*messages[i % num_requests], &ser_outs[i % num_requests]);
-    }
-    
+inline size_t benchmark_ser1de_serialize(Ser1de &ser1de, std::vector<google::protobuf::Message*>& messages, std::vector<std::string>& ser_outs) {
+    size_t operations = 0;
     auto start_time = std::chrono::steady_clock::now();
-    for (size_t i = 0; i < num_requests; i++) {
-        auto req_start = std::chrono::steady_clock::now();
-        ser1de.SerializeToString(*messages[i], &ser_outs[i]);
-        auto req_end = std::chrono::steady_clock::now();
-        latencies[i] = std::chrono::duration_cast<std::chrono::nanoseconds>(req_end - req_start);
-    }
-    auto end_time = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
-    //std::cout << "Ser1de Serialize: " << duration.count() << " ns" << std::endl;
+    auto end_time = start_time + kBenchmarkDuration;
 
+    while (std::chrono::steady_clock::now() < end_time) {
+        size_t i = operations % messages.size();
+        ser1de.SerializeToString(*messages[i], &ser_outs[i]);
+        operations++;
+    }
+
+    std::cout << "Ser1de Serialize throughput: " << operations / kBenchmarkDuration.count() << " ops/s" << std::endl;
     return ser1de.get_ser_gather_out_size();
 }
 
-inline void benchmark_ser1de_deserialize(Ser1de &ser1de, std::vector<std::string>& ser_outs, std::vector<google::protobuf::Message*>& deser_messages_out, size_t num_requests, std::vector<std::chrono::nanoseconds>& latencies) {
-    // Warmup iterations
-    for (size_t i = 0; i < kNofWarmupIterations; i++) {
-        ser1de.ParseFromString(ser_outs[i % num_requests], deser_messages_out[i % num_requests]);
-    }
-    
+inline void benchmark_ser1de_deserialize(Ser1de &ser1de, std::vector<std::string>& ser_outs, std::vector<google::protobuf::Message*>& deser_messages_out) {
+    size_t operations = 0;
     auto start_time = std::chrono::steady_clock::now();
-    for (size_t i = 0; i < num_requests; i++) {
-        auto req_start = std::chrono::steady_clock::now();
+    auto end_time = start_time + kBenchmarkDuration;
+
+    while (std::chrono::steady_clock::now() < end_time) {
+        size_t i = operations % deser_messages_out.size();
         ser1de.ParseFromString(ser_outs[i], deser_messages_out[i]);
-        auto req_end = std::chrono::steady_clock::now();
-        latencies[i] = std::chrono::duration_cast<std::chrono::nanoseconds>(req_end - req_start);
+        operations++;
     }
-    auto end_time = std::chrono::steady_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time);
-    //std::cout << "Ser1de Deserialize: " << duration.count() << " ns" << std::endl;
+
+    std::cout << "Ser1de Deserialize throughput: " << operations / kBenchmarkDuration.count() << " ops/s" << std::endl;
 }
 
 void compare_messages(std::vector<google::protobuf::Message*>& messages, std::vector<google::protobuf::Message*>& ser1de_deser_messages_out) {
@@ -115,7 +94,7 @@ void compare_messages(std::vector<google::protobuf::Message*>& messages, std::ve
 
     // Verify correctness
     bool all_correct = true;
-    for (size_t i = 0; i < messages.size() && all_correct; ++i) {
+    for (size_t i = 0; i < kNofIterations && all_correct; ++i) {
         all_correct = differencer.Compare(*messages[i], *ser1de_deser_messages_out[i]);
         //all_correct = google::protobuf::util::MessageDifferencer::Equivalent(messages[i], ser1de_deser_messages_out[i]);
     }
@@ -127,7 +106,7 @@ void compare_messages(std::vector<google::protobuf::Message*>& messages, std::ve
     assert(all_correct);
 }
 
-int benchmark (size_t num_requests) {
+int benchmark () {
     // Verify that the version of the library that we linked against is
     // compatible with the version of the headers we compiled against.
     GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -138,12 +117,12 @@ int benchmark (size_t num_requests) {
     std::vector<google::protobuf::Message*> proto_deser_messages_out;
     std::vector<google::protobuf::Message*> ser1de_deser_messages_out;
 
-    std::vector<std::string> proto_ser_outs(num_requests);
-    std::vector<std::string> ser1de_ser_outs(num_requests);
+    std::vector<std::string> proto_ser_outs(kNofIterations * 26);
+    std::vector<std::string> ser1de_ser_outs(kNofIterations * 26);
 
     // Initialize the protos
     std::string s("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz0123456789");
-    for (size_t i = 0; i < num_requests; i += 26) {
+    for (size_t i = 0; i < kNofIterations; i++) {
         // Message 0
         google::protobuf::Message* m0_1 = new fleetbench::proto::Message0();
         fleetbench::proto::Message0_Set_1(reinterpret_cast<fleetbench::proto::Message0*>(m0_1), &s);
@@ -358,48 +337,19 @@ int benchmark (size_t num_requests) {
         ser1de_deser_messages_out.push_back(ser1de_deser_m9_2);
     }
     
-    std::cout << "-----------------------------------------------------" << std::endl;
-    std::cout << "\t\tNumber of requests: " << num_requests << std::endl;
-    std::cout << "-----------------------------------------------------" << std::endl;
+    std::cout << "Size of messages: " << messages.size() << std::endl;
 
-    std::vector<std::chrono::nanoseconds> proto_ser_latencies(num_requests);
-    std::vector<std::chrono::nanoseconds> proto_deser_latencies(num_requests);
-    std::vector<std::chrono::nanoseconds> ser1de_ser_latencies(num_requests);
-    std::vector<std::chrono::nanoseconds> ser1de_deser_latencies(num_requests);
+    benchmark_serialize(messages, proto_ser_outs);
 
-    benchmark_serialize(messages, proto_ser_outs, num_requests, proto_ser_latencies);
-    benchmark_deserialize(proto_ser_outs, proto_deser_messages_out, num_requests, proto_deser_latencies);
-    benchmark_ser1de_serialize(ser1de, messages, ser1de_ser_outs, num_requests, ser1de_ser_latencies);
-    benchmark_ser1de_deserialize(ser1de, ser1de_ser_outs, ser1de_deser_messages_out, num_requests, ser1de_deser_latencies);
+    benchmark_deserialize(proto_ser_outs, proto_deser_messages_out);
 
-    std::cout << "Requests, Protobuf Serialize, Protobuf Deserialize, Ser1de Serialize, Ser1de Deserialize" << std::endl;
-    for (size_t i = 0; i < num_requests; i++) {
-        std::cout << num_requests << ", " << proto_ser_latencies[i].count() << ", " << proto_deser_latencies[i].count() << ", " << ser1de_ser_latencies[i].count() << ", " << ser1de_deser_latencies[i].count() << std::endl;
-    }
+    size_t ser1de_ser_out_size = benchmark_ser1de_serialize(ser1de, messages, ser1de_ser_outs);
+
+    benchmark_ser1de_deserialize(ser1de, ser1de_ser_outs, ser1de_deser_messages_out);
+
     return 0;
 }
 
 int main () {
-    benchmark(100);
-    std::cerr << "Finished 100 requests" << std::endl;
-    benchmark(1000);
-    std::cerr << "Finished 1000 requests" << std::endl;
-    benchmark(2000);
-    std::cerr << "Finished 2000 requests" << std::endl;
-    benchmark(3000);
-    std::cerr << "Finished 3000 requests" << std::endl;
-    benchmark(4000);
-    std::cerr << "Finished 4000 requests" << std::endl;
-    benchmark(5000);
-    std::cerr << "Finished 5000 requests" << std::endl;
-    benchmark(10000);
-    std::cerr << "Finished 10000 requests" << std::endl;
-    benchmark(15000);
-    std::cerr << "Finished 15000 requests" << std::endl;
-    benchmark(20000);
-    std::cerr << "Finished 20000 requests" << std::endl;
-    benchmark(25000);
-    std::cerr << "Finished 25000 requests" << std::endl;
-    benchmark(30000);
-    std::cerr << "Finished 30000 requests" << std::endl;
+    benchmark();
 }
