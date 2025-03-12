@@ -25,9 +25,9 @@
 
 #include <tuple>
 
-static constexpr size_t kNofIterations = 1001;
+static constexpr size_t kNofIterations = 10001;
 
-static constexpr size_t warmup = 5;
+static constexpr size_t warmup = 50;
 
 void report_timings(std::vector<std::chrono::nanoseconds> perfs, std::string stat) {
     std::cout << stat << "(ns)";
@@ -349,10 +349,10 @@ int benchmark (size_t message_id, size_t setter) {
     //report_timings(ser1de_serialization_durations, "ser1de_serialization");
     //report_timings(ser1de_deserialization_durations, "ser1de_deserialization");
 
-    auto proto_serialization_time = std::accumulate(proto_serialization_durations.begin(), proto_serialization_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations;  
-    auto proto_deserialization_time = std::accumulate(proto_deserialization_durations.begin(), proto_deserialization_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations;
-    auto ser1de_serialization_time = std::accumulate(ser1de_serialization_durations.begin(), ser1de_serialization_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations;
-    auto ser1de_deserialization_time = std::accumulate(ser1de_deserialization_durations.begin(), ser1de_deserialization_durations.end(), std::chrono::nanoseconds(0)).count() / kNofIterations;
+    auto proto_serialization_time = std::accumulate(proto_serialization_durations.begin(), proto_serialization_durations.end(), std::chrono::nanoseconds(0)).count() / (kNofIterations * 1000);  // Convert to microseconds
+    auto proto_deserialization_time = std::accumulate(proto_deserialization_durations.begin(), proto_deserialization_durations.end(), std::chrono::nanoseconds(0)).count() / (kNofIterations * 1000);
+    auto ser1de_serialization_time = std::accumulate(ser1de_serialization_durations.begin(), ser1de_serialization_durations.end(), std::chrono::nanoseconds(0)).count() / (kNofIterations * 1000);
+    auto ser1de_deserialization_time = std::accumulate(ser1de_deserialization_durations.begin(), ser1de_deserialization_durations.end(), std::chrono::nanoseconds(0)).count() / (kNofIterations * 1000);
     auto proto_end2end_time = proto_serialization_time + proto_deserialization_time;
     auto ser1de_end2end_time = ser1de_serialization_time + ser1de_deserialization_time;
 
@@ -364,9 +364,9 @@ int benchmark (size_t message_id, size_t setter) {
     std::cout << "---------------------------------------------------------------------------------------------------------------" << std::endl;
     std::cout << "\t\tMessage:" << message_id << ", Setter:" << setter << ", Flat Object Size: " << ser1de_ser_out_size << "bytes" << std::endl;
     std::cout << "---------------------------------------------------------------------------------------------------------------" << std::endl;
-    std::cout << "\t\tSerialization, Deserialization, End2End, Packet Size" << std::endl;
-    std::cout << "Protobuf:\t" << proto_serialization_time << "ns, " << proto_deserialization_time << "ns, " << proto_serialization_time + proto_deserialization_time << "ns, " << proto_ser_outs[0].size() << "bytes" << std::endl;
-    std::cout << "Ser1de:\t\t" << ser1de_serialization_time << "ns, " << ser1de_deserialization_time << "ns, " << ser1de_serialization_time + ser1de_deserialization_time << "ns, " << ser1de_ser_outs[0].size() << "bytes" << std::endl;
+    std::cout << "\t\tSerialization, Deserialization, End2End, Packet Size, Ser+Deser" << std::endl;
+    std::cout << "Protobuf:\t" << proto_serialization_time << "us, " << proto_deserialization_time << "us, " << proto_serialization_time + proto_deserialization_time << "us, " << proto_ser_outs[0].size() << "bytes, " << (proto_serialization_durations[0].count() + proto_deserialization_durations[0].count()) / 1000.0 << "us" << std::endl;
+    std::cout << "Ser1de:\t\t" << ser1de_serialization_time << "us, " << ser1de_deserialization_time << "us, " << ser1de_serialization_time + ser1de_deserialization_time << "us, " << ser1de_ser_outs[0].size() << "bytes, " << (ser1de_serialization_durations[0].count() + ser1de_deserialization_durations[0].count()) / 1000.0 << "us" << std::endl;
     std::cout << "Speedups:\t" << ser_speedup << "%" << ", " << deser_speedup << "%" << ", " << end2end_speedup << "%" << std::endl;
     std::cout << "Compression:\t" << compression_ratio << "%" << std::endl;
     std::cout << "---------------------------------------------------------------------------------------------------------------" << std::endl;
