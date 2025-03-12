@@ -46,15 +46,14 @@ ser1de_sizes, ser1de_times, ser1de_packets = zip(*ser1de_data)
 
 # Create the first plot (Serialization Time)
 plt.figure(figsize=(12, 6))
-plt.axes([0.125, 0.15, 0.75, 0.75])
+plt.axes([0.125, 0.15, 0.75, 0.75])  # [left, bottom, width=9/12, height]
 plt.scatter(protobuf_sizes, protobuf_times, label='Protobuf', alpha=0.6)
 plt.plot(protobuf_sizes, protobuf_times, 'b-', alpha=0.3)
 plt.scatter(ser1de_sizes, ser1de_times, label='SERenaDE', alpha=0.6)
 plt.plot(ser1de_sizes, ser1de_times, 'r-', alpha=0.3)
 
-# Remove log scales
-# plt.xscale('log')
-# plt.yscale('log')
+plt.xscale('log')
+plt.yscale('log')
 plt.xlabel('Flat Object Size (bytes)', fontsize=22)
 plt.ylabel('Serialization + Deserialization Time (μs)', fontsize=22)
 plt.title('Performance Comparison: Protobuf vs SERenaDE', fontsize=26)
@@ -63,24 +62,33 @@ plt.grid(True, alpha=0.3)
 plt.margins(0.05)
 
 # Set custom x-axis ticks
-plt.gca().minorticks_off()
+custom_ticks = [2e3, 5e3, 1e4, 2e4]
+plt.gca().set_xticks(custom_ticks)
+plt.gca().set_xticklabels(['2×10³', '5×10³', '10⁴', '2×10⁴'])
+
+custom_ticks = [2e2, 5e2, 1e3]
+plt.gca().set_yticks(custom_ticks)
+plt.gca().set_yticklabels(['2×10²', '5×10²', '10³'])
+
 plt.xticks(fontsize=22, rotation=0)
 plt.yticks(fontsize=22, rotation=0)
 
-plt.savefig('size_time.pdf', bbox_inches='tight', pad_inches=0.2)
+# Disable minor ticks
+plt.gca().minorticks_off()
+
+plt.savefig('size_time_log-scale.pdf', bbox_inches='tight', pad_inches=0.2)
 plt.close()
 
 # Create the second plot (Packet Size)
 plt.figure(figsize=(12, 6))
-plt.axes([0.125, 0.15, 0.75, 0.75])
+plt.axes([0.125, 0.15, 0.75, 0.75])  # [left, bottom, width=9/12, height]
 plt.scatter(protobuf_sizes, protobuf_packets, label='Protobuf', alpha=0.6)
 plt.plot(protobuf_sizes, protobuf_packets, 'b-', alpha=0.3)
 plt.scatter(ser1de_sizes, ser1de_packets, label='SERenaDE', alpha=0.6)
 plt.plot(ser1de_sizes, ser1de_packets, 'r-', alpha=0.3)
 
-# Remove log scales
-# plt.xscale('log')
-# plt.yscale('log')
+plt.xscale('log')
+plt.yscale('log')
 plt.xlabel('Flat Object Size (bytes)', fontsize=22)
 plt.ylabel('Packet Size (bytes)', fontsize=22)
 plt.title('Size Comparison: Protobuf vs SERenaDE', fontsize=26)
@@ -89,9 +97,19 @@ plt.grid(True, alpha=0.3)
 plt.margins(0.05)
 
 # Set custom x-axis ticks
-plt.gca().minorticks_off()
+custom_ticks = [2e3, 5e3, 1e4, 2e4]
+plt.gca().set_xticks(custom_ticks)
+plt.gca().set_xticklabels(['2×10³', '5×10³', '10⁴', '2×10⁴'])
+
+custom_ticks = [1e3, 2e3, 5e3, 1e4]
+plt.gca().set_yticks(custom_ticks)
+plt.gca().set_yticklabels(['10³', '2×10³', '5×10³', '10⁴'])
+
 plt.xticks(fontsize=22, rotation=0)
 plt.yticks(fontsize=22, rotation=0)
 
-plt.savefig('compress_rate.pdf', bbox_inches='tight', pad_inches=0.2)
+# Disable minor ticks
+plt.gca().minorticks_off()
+
+plt.savefig('compress_rate_log-scale.pdf', bbox_inches='tight', pad_inches=0.2)
 plt.close()
