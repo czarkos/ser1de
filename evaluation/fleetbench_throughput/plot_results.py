@@ -47,8 +47,8 @@ def plot_latencies(df):
     type_names = {
         0: 'Proto Serialize',
         1: 'Proto Deserialize',
-        2: 'Ser1de Serialize',
-        3: 'Ser1de Deserialize'
+        2: 'SERenaDE Serialize',
+        3: 'SERenaDE Deserialize'
     }
     
     colors = ['blue', 'red', 'green', 'orange']
@@ -64,74 +64,60 @@ def plot_latencies(df):
                 linewidth=2,
                 markersize=8)
     
-    plt.xlabel('Requests per Second')
-    plt.ylabel('P50 Latency (microseconds)')
-    plt.title('50th Percentile Latency vs RPS')
+    plt.xlabel('Requests per Second', fontsize=20)
+    plt.ylabel('P50 Latency (microseconds)', fontsize=20)
+    plt.title('50th Percentile Latency vs RPS', fontsize=24)
     plt.grid(True, linestyle='--', alpha=0.7)
+    plt.xlim(2000, 10000)
     plt.ylim(0, 1000)
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tick_params(axis='both', labelsize=20)
+    plt.legend(loc='upper left', fontsize=20)
     plt.tight_layout()
-    plt.savefig('p50_latency.png', bbox_inches='tight', dpi=300)
+    plt.savefig('p50_latency.pdf', bbox_inches='tight')
     plt.close()
     
     # Create figure for p95
     plt.figure(figsize=(12, 7))
     for i, (type_id, group) in enumerate(df.groupby('type')):
-        # Plot the main line up to 2000
-        plt.plot(group['rps'], group['p95'].clip(upper=2000),
+        plt.plot(group['rps'], group['p95'],
                 label=type_names[type_id],
                 color=colors[i],
                 marker=markers[i],
                 linewidth=2,
                 markersize=8)
-        
-        # Plot dotted lines for values exceeding 2000
-        high_values = group[group['p95'] > 2000]
-        if not high_values.empty:
-            plt.plot(high_values['rps'], [2000] * len(high_values),
-                    color=colors[i],
-                    marker='x',
-                    markersize=10,
-                    linestyle='none')
     
-    plt.xlabel('Requests per Second')
-    plt.ylabel('P95 Latency (microseconds)')
-    plt.title('95th Percentile Latency vs RPS')
+    plt.xlabel('Requests per Second', fontsize=20)
+    plt.ylabel('P95 Latency (microseconds)', fontsize=20)
+    plt.title('95th Percentile Latency vs RPS', fontsize=24)
     plt.grid(True, linestyle='--', alpha=0.7)
+    plt.xlim(2000, 10000)
     plt.ylim(0, 2000)
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tick_params(axis='both', labelsize=20)
+    plt.legend(loc='upper left', fontsize=20)
     plt.tight_layout()
-    plt.savefig('p95_latency.png', bbox_inches='tight', dpi=300)
+    plt.savefig('p95_latency.pdf', bbox_inches='tight')
     plt.close()
     
     # Create figure for p99
     plt.figure(figsize=(12, 7))
     for i, (type_id, group) in enumerate(df.groupby('type')):
-        # Plot the main line up to 10000
-        plt.plot(group['rps'], group['p99'].clip(upper=10000),
+        plt.plot(group['rps'], group['p99'],
                 label=type_names[type_id],
                 color=colors[i],
                 marker=markers[i],
                 linewidth=2,
                 markersize=8)
-        
-        # Plot dotted lines for values exceeding 10000
-        high_values = group[group['p99'] > 10000]
-        if not high_values.empty:
-            plt.plot(high_values['rps'], [10000] * len(high_values),
-                    color=colors[i],
-                    marker='x',
-                    markersize=10,
-                    linestyle='none')
     
-    plt.xlabel('Requests per Second')
-    plt.ylabel('P99 Latency (microseconds)')
-    plt.title('99th Percentile Latency vs RPS')
+    plt.xlabel('Requests per Second', fontsize=20)
+    plt.ylabel('P99 Latency (microseconds)', fontsize=20)
+    plt.title('99th Percentile Latency vs RPS', fontsize=24)
     plt.grid(True, linestyle='--', alpha=0.7)
+    plt.xlim(2000, 10000)
     plt.ylim(0, 10000)
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tick_params(axis='both', labelsize=20)
+    plt.legend(loc='upper left', fontsize=20)
     plt.tight_layout()
-    plt.savefig('p99_latency.png', bbox_inches='tight', dpi=300)
+    plt.savefig('p99_latency.pdf', bbox_inches='tight')
     plt.close()
 
 if __name__ == "__main__":

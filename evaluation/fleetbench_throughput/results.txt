@@ -1,12 +1,36 @@
 type,rps,p50,p95,p99
 -----------------------------------------------------
+	Request per Second: 6500 for 10 Seconds
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Serialize:
+            p50            p95            p99
+---------------------------------------------
+            264            579            634
+-----------------------------------------------------
+	Request per Second: 7000 for 10 Seconds
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Serialize:
+            p50            p95            p99
+---------------------------------------------
+            345            679           4704
+-----------------------------------------------------
+	Request per Second: 7500 for 10 Seconds
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Serialize:
+            p50            p95            p99
+---------------------------------------------
+            419            776           6716
+-----------------------------------------------------
 	Request per Second: 8000 for 10 Seconds
 -----------------------------------------------------
 
 Tail Latencies (microseconds) - Proto Serialize:
             p50            p95            p99
 ---------------------------------------------
-            174            557            591
+            466            856           5363
 -----------------------------------------------------
 	Request per Second: 8500 for 10 Seconds
 -----------------------------------------------------
@@ -14,7 +38,7 @@ Tail Latencies (microseconds) - Proto Serialize:
 Tail Latencies (microseconds) - Proto Serialize:
             p50            p95            p99
 ---------------------------------------------
-            214            591            622
+            600           5007           6499
 -----------------------------------------------------
 	Request per Second: 9000 for 10 Seconds
 -----------------------------------------------------
@@ -22,31 +46,15 @@ Tail Latencies (microseconds) - Proto Serialize:
 Tail Latencies (microseconds) - Proto Serialize:
             p50            p95            p99
 ---------------------------------------------
-            249            638           9347
+         231978         447579         475046
 -----------------------------------------------------
-	Request per Second: 9500 for 10 Seconds
------------------------------------------------------
-
-Tail Latencies (microseconds) - Proto Serialize:
-            p50            p95            p99
----------------------------------------------
-            328           4202          11565
------------------------------------------------------
-	Request per Second: 10000 for 10 Seconds
+	Request per Second: 3500 for 10 Seconds
 -----------------------------------------------------
 
-Tail Latencies (microseconds) - Proto Serialize:
+Tail Latencies (microseconds) - Proto Deserialize:
             p50            p95            p99
 ---------------------------------------------
-           5864          52145          52686
------------------------------------------------------
-	Request per Second: 10500 for 10 Seconds
------------------------------------------------------
-
-Tail Latencies (microseconds) - Proto Serialize:
-            p50            p95            p99
----------------------------------------------
-         268534         544004         564694
+            173            712            808
 -----------------------------------------------------
 	Request per Second: 4000 for 10 Seconds
 -----------------------------------------------------
@@ -54,7 +62,7 @@ Tail Latencies (microseconds) - Proto Serialize:
 Tail Latencies (microseconds) - Proto Deserialize:
             p50            p95            p99
 ---------------------------------------------
-            171            730            793
+            230            769            832
 -----------------------------------------------------
 	Request per Second: 4500 for 10 Seconds
 -----------------------------------------------------
@@ -62,7 +70,7 @@ Tail Latencies (microseconds) - Proto Deserialize:
 Tail Latencies (microseconds) - Proto Deserialize:
             p50            p95            p99
 ---------------------------------------------
-            191            819            863
+            363            907           2885
 -----------------------------------------------------
 	Request per Second: 5000 for 10 Seconds
 -----------------------------------------------------
@@ -70,7 +78,7 @@ Tail Latencies (microseconds) - Proto Deserialize:
 Tail Latencies (microseconds) - Proto Deserialize:
             p50            p95            p99
 ---------------------------------------------
-            267            912           6730
+            512           1133           5328
 -----------------------------------------------------
 	Request per Second: 5500 for 10 Seconds
 -----------------------------------------------------
@@ -78,7 +86,7 @@ Tail Latencies (microseconds) - Proto Deserialize:
 Tail Latencies (microseconds) - Proto Deserialize:
             p50            p95            p99
 ---------------------------------------------
-            364            978           8763
+            881           5642           6837
 -----------------------------------------------------
 	Request per Second: 6000 for 10 Seconds
 -----------------------------------------------------
@@ -86,23 +94,31 @@ Tail Latencies (microseconds) - Proto Deserialize:
 Tail Latencies (microseconds) - Proto Deserialize:
             p50            p95            p99
 ---------------------------------------------
-            435           1028           1062
+         363018         669692         694055
 -----------------------------------------------------
-	Request per Second: 6500 for 10 Seconds
------------------------------------------------------
-
-Tail Latencies (microseconds) - Proto Deserialize:
-            p50            p95            p99
----------------------------------------------
-         253263         456817         475404
------------------------------------------------------
-	Request per Second: 7000 for 10 Seconds
+	Request per Second: 7500 for 10 Seconds
 -----------------------------------------------------
 
-Tail Latencies (microseconds) - Proto Deserialize:
+Tail Latencies (microseconds) - Ser1de Serialize:
             p50            p95            p99
 ---------------------------------------------
-         664126        1250030        1300233
+            208            529           4930
+-----------------------------------------------------
+	Request per Second: 8000 for 10 Seconds
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+            292            529            749
+-----------------------------------------------------
+	Request per Second: 8500 for 10 Seconds
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+            395           1253           5194
 -----------------------------------------------------
 	Request per Second: 9000 for 10 Seconds
 -----------------------------------------------------
@@ -110,7 +126,7 @@ Tail Latencies (microseconds) - Proto Deserialize:
 Tail Latencies (microseconds) - Ser1de Serialize:
             p50            p95            p99
 ---------------------------------------------
-            112            291            340
+            447           1517           7143
 -----------------------------------------------------
 	Request per Second: 9500 for 10 Seconds
 -----------------------------------------------------
@@ -118,7 +134,7 @@ Tail Latencies (microseconds) - Ser1de Serialize:
 Tail Latencies (microseconds) - Ser1de Serialize:
             p50            p95            p99
 ---------------------------------------------
-            119            324           2891
+            508           4257           6189
 -----------------------------------------------------
 	Request per Second: 10000 for 10 Seconds
 -----------------------------------------------------
@@ -126,31 +142,23 @@ Tail Latencies (microseconds) - Ser1de Serialize:
 Tail Latencies (microseconds) - Ser1de Serialize:
             p50            p95            p99
 ---------------------------------------------
-            126            339            391
+          99032         173575         183189
 -----------------------------------------------------
-	Request per Second: 10500 for 10 Seconds
------------------------------------------------------
-
-Tail Latencies (microseconds) - Ser1de Serialize:
-            p50            p95            p99
----------------------------------------------
-            148            370           4268
------------------------------------------------------
-	Request per Second: 11000 for 10 Seconds
+	Request per Second: 5000 for 10 Seconds
 -----------------------------------------------------
 
-Tail Latencies (microseconds) - Ser1de Serialize:
+Tail Latencies (microseconds) - Ser1de Deserialize:
             p50            p95            p99
 ---------------------------------------------
-            176            391           9411
+            157            477            529
 -----------------------------------------------------
-	Request per Second: 11500 for 10 Seconds
+	Request per Second: 5500 for 10 Seconds
 -----------------------------------------------------
 
-Tail Latencies (microseconds) - Ser1de Serialize:
+Tail Latencies (microseconds) - Ser1de Deserialize:
             p50            p95            p99
 ---------------------------------------------
-            221           3685           5592
+            228            545           4105
 -----------------------------------------------------
 	Request per Second: 6000 for 10 Seconds
 -----------------------------------------------------
@@ -158,7 +166,7 @@ Tail Latencies (microseconds) - Ser1de Serialize:
 Tail Latencies (microseconds) - Ser1de Deserialize:
             p50            p95            p99
 ---------------------------------------------
-            154            476            658
+            366            684           5973
 -----------------------------------------------------
 	Request per Second: 6500 for 10 Seconds
 -----------------------------------------------------
@@ -166,7 +174,7 @@ Tail Latencies (microseconds) - Ser1de Deserialize:
 Tail Latencies (microseconds) - Ser1de Deserialize:
             p50            p95            p99
 ---------------------------------------------
-            174            531           2812
+            473           1096           5382
 -----------------------------------------------------
 	Request per Second: 7000 for 10 Seconds
 -----------------------------------------------------
@@ -174,7 +182,7 @@ Tail Latencies (microseconds) - Ser1de Deserialize:
 Tail Latencies (microseconds) - Ser1de Deserialize:
             p50            p95            p99
 ---------------------------------------------
-            212            569           6967
+            577           4890           6174
 -----------------------------------------------------
 	Request per Second: 7500 for 10 Seconds
 -----------------------------------------------------
@@ -182,28 +190,4 @@ Tail Latencies (microseconds) - Ser1de Deserialize:
 Tail Latencies (microseconds) - Ser1de Deserialize:
             p50            p95            p99
 ---------------------------------------------
-            303            640           4872
------------------------------------------------------
-	Request per Second: 8000 for 10 Seconds
------------------------------------------------------
-
-Tail Latencies (microseconds) - Ser1de Deserialize:
-            p50            p95            p99
----------------------------------------------
-            352           6154          12357
------------------------------------------------------
-	Request per Second: 8500 for 10 Seconds
------------------------------------------------------
-
-Tail Latencies (microseconds) - Ser1de Deserialize:
-            p50            p95            p99
----------------------------------------------
-         157908         298124         314468
------------------------------------------------------
-	Request per Second: 9000 for 10 Seconds
------------------------------------------------------
-
-Tail Latencies (microseconds) - Ser1de Deserialize:
-            p50            p95            p99
----------------------------------------------
-         441430         845074         878060
+          86985         194640         201277
