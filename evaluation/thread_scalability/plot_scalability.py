@@ -81,13 +81,13 @@ def create_plots(core_counts, aggregated_results, output_dir):
     plt.figure(figsize=(12, 8))
     plt.plot(core_counts, protobuf_serialize_throughputs, 'o-', linewidth=2, markersize=8, label='Protobuf')
     plt.plot(core_counts, ser1de_serialize_throughputs, 's-', linewidth=2, markersize=8, label='Ser1de')
-    plt.xlabel('Number of Cores', fontsize=18)
-    plt.ylabel('Throughput (requests/second)', fontsize=18)
-    plt.title('Serialization Throughput Scaling', fontsize=20)
-    plt.legend(fontsize=18)
+    plt.xlabel('Number of Processes', fontsize=22)
+    plt.ylabel('Throughput (requests/second)', fontsize=22)
+    plt.title('Serialization Throughput Scaling', fontsize=26)
+    plt.legend(fontsize=22)
     plt.grid(True)
-    plt.xticks(core_counts, fontsize=16)
-    plt.yticks(fontsize=16)
+    plt.xticks(core_counts, fontsize=22)
+    plt.yticks(fontsize=22)
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, 'serialization_throughput_scaling.pdf'))
     
@@ -95,13 +95,13 @@ def create_plots(core_counts, aggregated_results, output_dir):
     plt.figure(figsize=(12, 8))
     plt.plot(core_counts, protobuf_deserialize_throughputs, 'o-', linewidth=2, markersize=8, label='Protobuf')
     plt.plot(core_counts, ser1de_deserialize_throughputs, 's-', linewidth=2, markersize=8, label='Ser1de')
-    plt.xlabel('Number of Cores', fontsize=18)
-    plt.ylabel('Throughput (requests/second)', fontsize=18)
-    plt.title('Deserialization Throughput Scaling', fontsize=20)
-    plt.legend(fontsize=18)
+    plt.xlabel('Number of Processes', fontsize=22)
+    plt.ylabel('Throughput (requests/second)', fontsize=22)
+    plt.title('Deserialization Throughput Scaling', fontsize=26)
+    plt.legend(fontsize=22)
     plt.grid(True)
-    plt.xticks(core_counts, fontsize=16)
-    plt.yticks(fontsize=16)
+    plt.xticks(core_counts, fontsize=22)
+    plt.yticks(fontsize=22)
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, 'deserialization_throughput_scaling.pdf'))
     
@@ -152,8 +152,7 @@ def create_plots(core_counts, aggregated_results, output_dir):
 
 def main():
     # Define the core counts to test
-    #core_counts = [1, 2, 4]  # Adjust based on your system
-    core_counts = [1, 2, 4, 8, 16, 32, 64]  # Adjust based on your system
+    core_counts = [1, 2, 4, 8, 16, 24, 25, 26, 27, 28, 32, 34, 36]  # Adjust based on your system
     
     # Output directory for results and plots
     output_dir = 'parallel_benchmark_results'
