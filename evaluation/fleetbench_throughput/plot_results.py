@@ -54,52 +54,59 @@ def plot_latencies(df):
     colors = ['blue', 'red', 'green', 'orange']
     markers = ['o', 's', '^', 'D']
     
-    # Create figure for p50
+    # Create combined figure for p50 and p95
     plt.figure(figsize=(12, 7))
-    for i, (type_id, group) in enumerate(df.groupby('type')):
-        plt.plot(group['rps'], group['p50'], 
-                label=type_names[type_id],
-                color=colors[i],
-                marker=markers[i],
-                linewidth=2,
-                markersize=8)
     
-    plt.xlabel('Requests per Second', fontsize=22)
-    plt.ylabel('P50 Latency (microseconds)', fontsize=22)
-    plt.title('50th Percentile Latency vs RPS', fontsize=26)
-    plt.grid(True, linestyle='--', alpha=0.7)
-    plt.xlim(2000, 10000)
-    plt.ylim(0, 1000)
-    plt.tick_params(axis='both', labelsize=22)
-    plt.legend(loc='upper left', fontsize=22)
-    plt.tight_layout()
-    plt.savefig('p50_latency.pdf', bbox_inches='tight')
-    plt.close()
+    # First legend - line styles for percentiles
+    line1, = plt.plot([], [], color='black', linestyle='-', label='p50')
+    line2, = plt.plot([], [], color='black', linestyle=':', label='p95')
+    lines = [line1, line2]
     
-    # Create figure for p95
-    plt.figure(figsize=(12, 7))
+    plot_lines = []
     for i, (type_id, group) in enumerate(df.groupby('type')):
+        # Plot p50 with solid line
+        line, = plt.plot(group['rps'], group['p50'], 
+                      color=colors[i],
+                      marker=markers[i],
+                      linewidth=2,
+                      markersize=8)
+        plot_lines.append(line)
+        # Plot p95 with dotted line
         plt.plot(group['rps'], group['p95'],
-                label=type_names[type_id],
                 color=colors[i],
                 marker=markers[i],
+                linestyle=':',
                 linewidth=2,
                 markersize=8)
     
     plt.xlabel('Requests per Second', fontsize=22)
-    plt.ylabel('P95 Latency (microseconds)', fontsize=22)
-    plt.title('95th Percentile Latency vs RPS', fontsize=26)
+    plt.ylabel('Latency (microseconds)', fontsize=22)
+    plt.title('50th and 95th Percentile Latency vs RPS', fontsize=26)
     plt.grid(True, linestyle='--', alpha=0.7)
     plt.xlim(2000, 10000)
     plt.ylim(0, 2000)
     plt.tick_params(axis='both', labelsize=22)
-    plt.legend(loc='upper left', fontsize=22)
+    
+    # Create line style legend inside plot area
+    first_legend = plt.legend(lines, ['p50', 'p95'], 
+                            loc='upper left', 
+                            fontsize=22)
+    plt.gca().add_artist(first_legend)
+    
+    # Create data type legend above plot area (using only solid lines)
+    plt.legend(plot_lines, type_names.values(),
+              bbox_to_anchor=(0.5, 1.20), 
+              loc='center', 
+              fontsize=22, 
+              ncol=2,
+              frameon=False)
+    
     plt.tight_layout()
-    plt.savefig('p95_latency.pdf', bbox_inches='tight')
+    plt.savefig('p50_p95_latency.pdf', bbox_inches='tight')
     plt.close()
     
     # Create figure for p99
-    plt.figure(figsize=(12, 7))
+    plt.figure(figsize=(12, 8))
     for i, (type_id, group) in enumerate(df.groupby('type')):
         plt.plot(group['rps'], group['p99'],
                 label=type_names[type_id],
