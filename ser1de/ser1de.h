@@ -38,8 +38,10 @@ private:
     // DSA
     ScatterGather* scagatherer;
     // Utility variables
-    size_t BUFFER_SIZE = 16*4096; // 16KB
-    size_t SCHEMA_SIZE = 4*1024; // 1KB
+    size_t BUFFER_SIZE = 256*4096; // 1MB
+    size_t SCHEMA_SIZE = 256*1024; // 256KB
+    //size_t BUFFER_SIZE = 16*4096; // 64KB
+    //size_t SCHEMA_SIZE = 4*1024; // 4KB
     /*
     4 intermediate buffers : 2 for serialization, 2 for deserialization
     4 schema buffers: 2 for serialization, 2 for deserialization
@@ -140,7 +142,7 @@ void Ser1de::SerializeToString(google::protobuf::Message& message, std::string* 
     // <------------ GATHER SCHEMA ------>
     message.generate_seperated_schema(ser_ptrs, ser_sizes);
     // <------------ GATHER ------>
-    job_id1 = iaa_comp->compress_non_blocking(reinterpret_cast<uint8_t*>(ser_sizes.data()), ser_sizes.size() * sizeof(size_t), ser_compressed_sizes_out.get(), ser_sizes.size() * sizeof(uint16_t));
+    job_id1 = iaa_comp->compress_non_blocking(reinterpret_cast<uint8_t*>(ser_sizes.data()), ser_sizes.size() * sizeof(size_t), ser_compressed_sizes_out.get(), ser_sizes.size() * sizeof(uint16_t) * 1);
     scagatherer->GatherWithMemCpy(ser_ptrs, ser_sizes, ser_gather_buffer.data(), &ser_gather_out_size);
     // <------------ COMPRESS ------>
     //iaa_comp->compress_blocking(reinterpret_cast<uint8_t*>(ser_sizes.data()), ser_sizes.size() * sizeof(size_t), ser_compressed_sizes_out.get(), ser_sizes.size() * sizeof(uint16_t), &serComprSizesSize);
