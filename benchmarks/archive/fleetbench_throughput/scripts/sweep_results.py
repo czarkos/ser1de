@@ -4,13 +4,36 @@ import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
 
-protobuf_path = '/home/czarkos/dev/ser1de/protobuf/'
-benchmark_path = '/home/czarkos/dev/ser1de/benchmarks/ser1de_sensitivity/scripts/'
+protobuf_path = '/home/christos/dev/ser1de/protobuf/'
+benchmark_path = '/home/christos/dev/ser1de/benchmarks/fleetbench_compatibility/scripts/'
+
+def dist_plot(df, name):
+    # Focusing on the columns to stack
+    stack_columns = ["gather_schema", "gather", "compression", "make_header", "read_header", "decompression", "allocation", "scatter"]
+
+    df_sorted = df.sort_values(by="gather_out(bytes)")
+
+    # Create a stacked bar plot
+    ax = df_sorted.set_index("gather_out(bytes)")[stack_columns].plot(kind='bar', stacked=True, figsize=(10, 8))
+
+    # Adding labels and title
+    plt.xlabel("Message size")
+    plt.ylabel("Time Spent")
+    plt.title("Distribution of Time Spent by Operation")
+    plt.legend(title="Operations", loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)
+
+    plt.savefig(name, dpi=300, bbox_inches='tight')
+    plt.show()
+
 
 def ser_perf_plot(df, name):
+    # Calculate required sums for each plot line
+    df['gather_schema_gather_compression'] = df['gather_schema'] + df['gather'] + df['compression'] + df['make_header']
+    df['gather_compression']               = df['gather'] + df['compression']
+
     # Create a pivot table for the plots
     plot_data = df.pivot_table(index=['gather_out(bytes)', 'width', 'depth'], 
-                               values=['ser1de_serialization', 'proto_serialization'],
+                               values=['gather_schema_gather_compression', 'gather_compression', 'serialization'],
                                aggfunc='sum').reset_index()
 
     # Get unique dimensions for subplots
@@ -28,8 +51,9 @@ def ser_perf_plot(df, name):
             print("---------------")
 
             # Plot each line
-            ax.plot(subset['gather_out(bytes)'], subset['ser1de_serialization'], label='ser1de serialization', linewidth=2, marker='o', color='red')
-            ax.plot(subset['gather_out(bytes)'], subset['proto_serialization'], label='protobuf serialization', linewidth=2, marker='o', color='green')
+            ax.plot(subset['gather_out(bytes)'], subset['gather_schema_gather_compression'], label='ser1de serialization', linewidth=2, marker='o', color='red')
+            ax.plot(subset['gather_out(bytes)'], subset['gather_compression'], label='gather+compression', linewidth=2, marker='o', color='blue')
+            ax.plot(subset['gather_out(bytes)'], subset['serialization'], label='protobuf serialization', linewidth=2, marker='o', color='green')
 
             ax.set_title(f'Width {width}, Depth {depth}')
             ax.set_xlabel('Total Message Size (bytes)')
@@ -38,7 +62,7 @@ def ser_perf_plot(df, name):
             ax.grid(True)
             # Set independent axes limits
             ax.set_xlim(left=0.9*subset['gather_out(bytes)'].min(), right=1.1*subset['gather_out(bytes)'].max())
-            ax.set_ylim(bottom=0, top=max(subset['ser1de_serialization'].max(), subset['proto_serialization'].max())*1.1)
+            ax.set_ylim(bottom=0, top=max(subset['gather_schema_gather_compression'].max(), subset['gather_compression'].max(), subset['serialization'].max())*1.1)
 
             # Move the legend to the top right subplot
             if depth == depths.min() and width == widths.max():
@@ -51,9 +75,13 @@ def ser_perf_plot(df, name):
 
 
 def deser_perf_plot(df, name):
+    # Calculate required sums for each plot line
+    df['scatter_schema_decompression_scatter'] = df['scatter'] + df['decompression'] + df['allocation'] + df['read_header']
+    df['decompression_scatter']                = df['scatter'] + df['decompression']
+
     # Create a pivot table for the plots
     plot_data = df.pivot_table(index=['gather_out(bytes)', 'width', 'depth'], 
-                               values=['ser1de_deserialization', 'proto_deserialization'],
+                               values=['scatter_schema_decompression_scatter', 'decompression_scatter', 'deserialization'],
                                aggfunc='sum').reset_index()
 
     # Get unique dimensions for subplots
@@ -71,8 +99,9 @@ def deser_perf_plot(df, name):
             print("---------------")
 
             # Plot each line
-            ax.plot(subset['gather_out(bytes)'], subset['ser1de_deserialization'], label='ser1de deserialization', linewidth=2, marker='o', color='red')
-            ax.plot(subset['gather_out(bytes)'], subset['proto_deserialization'], label='protobuf deserialization', linewidth=2, marker='o', color='green')
+            ax.plot(subset['gather_out(bytes)'], subset['scatter_schema_decompression_scatter'], label='ser1de deserialization', linewidth=2, marker='o', color='red')
+            ax.plot(subset['gather_out(bytes)'], subset['decompression_scatter'], label='decompression+scatter', linewidth=2, marker='o', color='blue')
+            ax.plot(subset['gather_out(bytes)'], subset['deserialization'], label='protobuf deserialization', linewidth=2, marker='o', color='green')
 
             ax.set_title(f'Width {width}, Depth {depth}')
             ax.set_xlabel('Total Message Size (bytes)')
@@ -81,7 +110,7 @@ def deser_perf_plot(df, name):
 
             # Set independent axes limits
             ax.set_xlim(left=0.9*subset['gather_out(bytes)'].min(), right=1.1*subset['gather_out(bytes)'].max())
-            ax.set_ylim(bottom=0, top=max(subset['ser1de_deserialization'].max(), subset['proto_deserialization'].max())*1.1)
+            ax.set_ylim(bottom=0, top=max(subset['scatter_schema_decompression_scatter'].max(), subset['decompression_scatter'].max(), subset['deserialization'].max())*1.1)
 
             # Move the legend to the top right subplot
             if depth == depths.min() and width == widths.max():
@@ -97,8 +126,8 @@ def end2end_plot(df, name):
     # Serialization path: gather_schema + gather + compression + make_header
     # Deserialization path: read_header + decompression + scatter + scatter_schema + allocation
     
-    df['ser1de'] = df['ser1de_serialization'] + df['ser1de_deserialization']
-    df['protobuf'] =  df['proto_serialization'] + df['proto_deserialization']
+    df['ser1de'] = df['gather_schema'] + df['gather'] + df['compression'] + df['make_header'] + df['read_header'] + df['decompression'] + df['allocation'] + df['scatter']
+    df['protobuf'] = df['deserialization'] + df['serialization']
 
     # Create a pivot table for the plots
     plot_data = df.pivot_table(index=['gather_out(bytes)', 'width', 'depth'], 
@@ -121,7 +150,7 @@ def end2end_plot(df, name):
 
             # Plot each line
             ax.plot(subset['gather_out(bytes)'], subset['ser1de'], label='ser1de', linewidth=2, marker='o', color='red')
-            ax.plot(subset['gather_out(bytes)'], subset['protobuf'], label='protobuf', linewidth=2, marker='o', color='green')
+            ax.plot(subset['gather_out(bytes)'], subset['protobuf'], label='protobuf', linewidth=2, marker='o', color='blue')
 
             ax.set_title(f'Width {width}, Depth {depth}')
             ax.set_xlabel('Total Message Size (bytes)')
@@ -153,36 +182,54 @@ def process_output(res, warmups=1):
     def get_line_num(line):
         return int(line.strip().split(", ")[-1])
 
-    proto_ser, proto_deser = None, None
-    ser1de_ser, ser1de_deser = None, None
-    gather_out, compress_out = None, None
+    ser, deser, comp, decomp, scatter, gather, alloc, gather_schema, scatter_schema = None, None, None, None, None, None, None, None, None
+    gather_out, compress_out, decompress_out = None, None, None
+    make_header, read_header = None, None
     for line in res.split("\n"):
-        if "proto_deserialization" in line:
-            proto_deser = get_line_mean(line, warmups)
-        elif "proto_serialization" in line:
-            proto_ser = get_line_mean(line, warmups)
-        if "ser1de_deserialization" in line:
-            ser1de_deser = get_line_mean(line, warmups)
-        elif "ser1de_serialization" in line:
-            ser1de_ser = get_line_mean(line, warmups)
+        if "deserialization" in line:
+            deser = get_line_mean(line, warmups)
+        elif "serialization" in line:
+            ser = get_line_mean(line, warmups)
+        elif "decompress_out" in line:
+            decompress_out = get_line_num(line)
         elif "compress_out" in line:
             compress_out = get_line_num(line)
         elif "gather_out" in line:
             gather_out = get_line_num(line)
+        elif "decompression" in line:
+            decomp = get_line_mean(line, warmups)
+        elif "compression" in line:
+            comp = get_line_mean(line, warmups)
+        elif "gather_schemas" in line:
+            gather_schema = get_line_mean(line, warmups)
+        elif "scatter_schemas" in line:
+            scatter_schema = get_line_mean(line, warmups)
+        elif "allocation" in line:
+            alloc = get_line_mean(line, warmups)
+        elif "gather" in line:
+            gather = get_line_num(line)
+            #gather = get_line_mean(line, warmups)
+        elif "scatter" in line:
+            #scatter = get_line_mean(line, warmups)
+            scatter = get_line_num(line)
+        elif "make_header" in line:
+            make_header = get_line_mean(line, warmups)
+        elif "read_header" in line:
+            read_header = get_line_mean(line, warmups)
+    return ser, deser, gather_schema, gather, comp, scatter_schema, decomp, scatter, alloc, gather_out, compress_out, decompress_out, make_header, read_header
 
-    return proto_ser, proto_deser, ser1de_ser, ser1de_deser, gather_out, compress_out
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--widths', metavar='N', type=int, nargs='+', default=[3, 4, 5])
-parser.add_argument('--depths', metavar='N', type=int, nargs='+', default=[3, 4])
+parser.add_argument('--depths', metavar='N', type=int, nargs='+', default=[2, 3, 4])
 parser.add_argument('--ratios', metavar='N', type=int, nargs='+', default=[4])
-parser.add_argument('--sets', metavar='N', type=int, nargs='+', default=[1, 2, 3])
+parser.add_argument('--sets', metavar='N', type=int, nargs='+', default=[1, 2])
 
 parser.add_argument("-p", "--plot", action="store_true", help="Generate plots")
 args = parser.parse_args()
 
 df = []
-col_names = ["width", "depth", "#varint", "#string", "proto_serialization", "proto_deserialization", "ser1de_serialization", "ser1de_deserialization", "gather_out(bytes)", "compress_out(bytes)"]
+col_names = ["width", "depth", "#varint", "#string", "serialization", "deserialization", "gather_schema", "gather", "compression", "scatter_schema", "decompression", "scatter", "allocation", "gather_out(bytes)", "compress_out(bytes)", "decompress_out(bytes)", "make_header", "read_header"]
 for width in args.widths:
     for depth in args.depths:
         for ratio in args.ratios:
@@ -196,8 +243,8 @@ for width in args.widths:
                 res = subprocess.run(cmd, shell=True, text=True, capture_output=True).stdout
                 print(res)
 
-                proto_ser, proto_deser, ser1de_ser, ser1de_deser, gather_out, compress_out = process_output(res)
-                elem = [width, depth, num_varint, num_string, proto_ser, proto_deser, ser1de_ser, ser1de_deser, gather_out, compress_out]
+                ser, deser, gather_schema, gather, comp, scatter_schema, decomp, scatter, alloc, gather_out, compress_out, decompress_out, make_header, read_header = process_output(res)
+                elem = [width, depth, num_varint, num_string, ser, deser, gather_schema, gather, comp, scatter_schema, decomp, scatter, alloc, gather_out, compress_out, decompress_out, make_header, read_header]
 
                 df += [elem]
 
@@ -213,3 +260,4 @@ if args.plot:
     ser_perf_plot(data_frame, plt_dir + '/perf_serialization.png')
     deser_perf_plot(data_frame, plt_dir + '/perf_deserialization.png')
     end2end_plot(data_frame, plt_dir + '/end2end_sensitivity.png')
+    dist_plot(data_frame, plt_dir + '/time_distribution_plot.png')

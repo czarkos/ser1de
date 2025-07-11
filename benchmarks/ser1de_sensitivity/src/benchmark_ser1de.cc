@@ -89,7 +89,7 @@ int benchmark () {
     // compatible with the version of the headers we compiled against.
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-    Ser1de ser1de;
+    Ser1de ser1de("Software");
 
     std::vector<M> messages;
     std::vector<std::string> proto_ser_outs(kNofIterations);
