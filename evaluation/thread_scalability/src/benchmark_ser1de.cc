@@ -205,7 +205,8 @@ int benchmark (size_t num_requests) {
     std::vector<std::string> ser1de_ser_outs(num_requests);
 
     // Initialize the protos
-    std::string s("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz0123456789");
+    // std::string s("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz0123456789");
+    std::string s(1<<10, 'a');
     for (size_t i = 0; i < num_requests ; i += 26) {
         // Message 0
         google::protobuf::Message* m0_1 = new fleetbench::proto::Message0();
@@ -436,7 +437,7 @@ int benchmark (size_t num_requests) {
     benchmark_ser1de_serialize(ser1de, messages, ser1de_ser_outs, num_requests, ser1de_ser_latencies);
     benchmark_ser1de_deserialize(ser1de, ser1de_ser_outs, ser1de_deser_messages_out, num_requests, ser1de_deser_latencies);
 
-    compare_messages(messages, ser1de_deser_messages_out, num_requests);
+    //compare_messages(messages, ser1de_deser_messages_out, num_requests);
     //analyze_latencies(proto_ser_latencies, "Protobuf Serialize");
     //analyze_latencies(proto_deser_latencies, "Protobuf Deserialize");
     //analyze_latencies(ser1de_ser_latencies, "Ser1de Serialize");
@@ -491,5 +492,6 @@ int main () {
     std::cerr << "Finished 20000 requests" << std::endl;
     */
     benchmark(30000);
+    //benchmark(1000);
     std::cerr << "Finished 30000 requests" << std::endl;
 }

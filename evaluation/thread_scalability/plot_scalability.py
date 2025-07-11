@@ -80,7 +80,7 @@ def create_plots(core_counts, aggregated_results, output_dir):
     # Create figure 1: Serialization Throughput
     plt.figure(figsize=(12, 8))
     plt.plot(core_counts, protobuf_serialize_throughputs, 'o-', linewidth=2, markersize=8, label='Protobuf')
-    plt.plot(core_counts, ser1de_serialize_throughputs, 's-', linewidth=2, markersize=8, label='Ser1de')
+    plt.plot(core_counts, ser1de_serialize_throughputs, 's-', linewidth=2, markersize=8, label='SERenaDE')
     plt.xlabel('Number of Processes', fontsize=22)
     plt.ylabel('Throughput (requests/second)', fontsize=22)
     plt.title('Serialization Throughput Scaling', fontsize=26)
@@ -94,7 +94,7 @@ def create_plots(core_counts, aggregated_results, output_dir):
     # Create figure 2: Deserialization Throughput
     plt.figure(figsize=(12, 8))
     plt.plot(core_counts, protobuf_deserialize_throughputs, 'o-', linewidth=2, markersize=8, label='Protobuf')
-    plt.plot(core_counts, ser1de_deserialize_throughputs, 's-', linewidth=2, markersize=8, label='Ser1de')
+    plt.plot(core_counts, ser1de_deserialize_throughputs, 's-', linewidth=2, markersize=8, label='SERenaDE')
     plt.xlabel('Number of Processes', fontsize=22)
     plt.ylabel('Throughput (requests/second)', fontsize=22)
     plt.title('Deserialization Throughput Scaling', fontsize=26)
@@ -123,7 +123,7 @@ def create_plots(core_counts, aggregated_results, output_dir):
     
     fig, ax = plt.subplots(figsize=(12, 8))
     rects1 = ax.bar(x - width/2, protobuf_values, width, label='Protobuf')
-    rects2 = ax.bar(x + width/2, ser1de_values, width, label='Ser1de')
+    rects2 = ax.bar(x + width/2, ser1de_values, width, label='SERenaDE')
     
     ax.set_ylabel('Throughput (requests/second)', fontsize=18)
     ax.set_title(f'Maximum Throughput with {max_core_count} Cores', fontsize=20)
@@ -152,7 +152,7 @@ def create_plots(core_counts, aggregated_results, output_dir):
 
 def main():
     # Define the core counts to test
-    core_counts = [1, 2, 4, 8, 16, 24, 25, 26, 27, 28, 32, 34, 36]  # Adjust based on your system
+    core_counts = [1, 2, 4, 8, 12, 16, 20, 24, 28, 32, 64, 128, 256, 512, 1024]  # Adjust based on your system
     
     # Output directory for results and plots
     output_dir = 'parallel_benchmark_results'
