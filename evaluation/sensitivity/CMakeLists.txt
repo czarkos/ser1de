@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.16)
 
 # gcc setup
 #add_definitions(-std=c++17 -O3 -march=native)
-add_definitions(-std=c++14 -O0 -march=native)
+add_definitions(-std=c++14 -O1 -march=native)
 add_definitions(-Wall -Wextra -Wformat -Wformat-security)
 # add_definitions(-pedantic)
 add_definitions(-fstack-protector -fPIE -fPIC)

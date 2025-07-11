@@ -4,8 +4,8 @@ import sys
 import re
 import matplotlib.pyplot as plt
 
-ser1de_path = '/home/christos/dev/ser1de/'
-protobuf_path = '/home/christos/dev/protobuf/'
+ser1de_path = '/home/czarkos/dev/ser1de/'
+protobuf_path = '/home/czarkos/dev/protobuf/'
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ser1de_path + 'scripts'))
 
 from proto_generator import *

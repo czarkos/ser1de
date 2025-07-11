@@ -4,8 +4,8 @@ import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
 
-protobuf_path = '/home/christos/dev/ser1de/protobuf/'
-benchmark_path = '/home/christos/dev/ser1de/evaluation/sensitivity/scripts/'
+protobuf_path = '/home/czarkos/dev/ser1de/protobuf/'
+benchmark_path = '/home/czarkos/dev/ser1de/evaluation/sensitivity/scripts/'
 
 def ser_perf_plot(df, name):
     # Create a pivot table for the plots
@@ -174,7 +174,7 @@ def process_output(res, warmups=1):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--widths', metavar='N', type=int, nargs='+', default=[3, 4, 5])
-parser.add_argument('--depths', metavar='N', type=int, nargs='+', default=[2, 3, 4])
+parser.add_argument('--depths', metavar='N', type=int, nargs='+', default=[3, 4])
 parser.add_argument('--ratios', metavar='N', type=int, nargs='+', default=[4])
 parser.add_argument('--sets', metavar='N', type=int, nargs='+', default=[1, 2, 3])
 
