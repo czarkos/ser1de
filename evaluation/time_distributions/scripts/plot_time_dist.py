@@ -73,7 +73,7 @@ def create_stacked_bar_plot(csv_file, plot_type, output_dir=None):
     # Create the plot
     print(f"  Creating {plot_type} plot...")
     
-    df_sorted = df[df['MessageSize'] <= 100000].sort_values(by='MessageSize')
+    df_sorted = df[df['MessageSize'] <= 1000000].sort_values(by='MessageSize')
     ax = df_sorted.set_index("MessageSize")[stack_columns].plot(kind='bar', stacked=True, figsize=(12, 8))
 
     ax.tick_params(axis='both', which='major', labelsize=22)
