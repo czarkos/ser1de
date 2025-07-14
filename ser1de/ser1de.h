@@ -12,6 +12,8 @@
 
 class Ser1de {
 public:
+    Ser1de(std::string execution_path, size_t num_buffers, size_t num_schemas);
+    Ser1de(size_t num_buffers, size_t num_schemas);
     Ser1de(std::string execution_path);
     Ser1de();
     ~Ser1de();
@@ -38,10 +40,16 @@ private:
     // DSA
     ScatterGather* scagatherer;
     // Utility variables
-    size_t BUFFER_SIZE = 256*4096; // 1MB
-    size_t SCHEMA_SIZE = 256*1024; // 256KB
-    //size_t BUFFER_SIZE = 16*4096; // 64KB
-    //size_t SCHEMA_SIZE = 4*1024; // 4KB
+    //size_t BUFFER_SIZE = 256*4096; // 1MB
+    //size_t SCHEMA_SIZE = 256*1024; // 256KB
+
+    size_t BUFFER_PAGE_SIZE = 4096;
+    size_t SCHEMA_PAGE_SIZE = 1024;
+    size_t NUM_BUFFERS;
+    size_t NUM_SCHEMAS;
+
+    size_t BUFFER_SIZE;
+    size_t SCHEMA_SIZE;
     /*
     4 intermediate buffers : 2 for serialization, 2 for deserialization
     4 schema buffers: 2 for serialization, 2 for deserialization
@@ -84,7 +92,64 @@ private:
     inline void read_header(const std::string& ser1de_ser_out, size_t& out_size, uint32_t& comprOutputSize, std::vector<size_t>& sizes_for_scatter, const uint8_t*& compressed);
 };
 
+Ser1de::Ser1de(std::string execution_path, size_t num_buffers, size_t num_schemas) {
+    NUM_BUFFERS = num_buffers;
+    NUM_SCHEMAS = num_schemas;
+    BUFFER_SIZE = NUM_BUFFERS * BUFFER_PAGE_SIZE;
+    SCHEMA_SIZE = NUM_SCHEMAS * SCHEMA_PAGE_SIZE;
+    // Initialize IAA with the appropriate path
+    if (execution_path == "Hardware") {
+        iaa_comp = new IAAComp(qpl_path_hardware, 1, 2);
+    } else if (execution_path == "Software") {
+        iaa_comp = new IAAComp(qpl_path_software, 1, 2);
+    } else {
+        throw std::invalid_argument("Invalid execution path");
+    }
+    scagatherer = new ScatterGather();
+
+    // pre-allocate the required intermediate buffers
+    ser_compressed_out = std::make_unique<uint8_t[]>(BUFFER_SIZE);
+    ser_compressed_sizes_out = std::make_unique<uint8_t[]>(BUFFER_SIZE);
+    ser_gather_buffer.resize(BUFFER_SIZE, 0);
+    deser_decompress_out.resize(BUFFER_SIZE, 0);
+    ser_ptrs.reserve(SCHEMA_SIZE);
+    ser_sizes.reserve(SCHEMA_SIZE);
+    deser_ptrs.reserve(SCHEMA_SIZE);
+    deser_sizes_for_scatter.reserve(SCHEMA_SIZE);
+    
+    // Initialize latency measurement arrays with 5 empty vectors each
+    ser_latencies.resize(5);
+    parse_latencies.resize(5);
+}
+
+Ser1de::Ser1de(size_t num_buffers, size_t num_schemas) {
+    NUM_BUFFERS = num_buffers;
+    NUM_SCHEMAS = num_schemas;
+    BUFFER_SIZE = NUM_BUFFERS * BUFFER_PAGE_SIZE;
+    SCHEMA_SIZE = NUM_SCHEMAS * SCHEMA_PAGE_SIZE;
+    iaa_comp = new IAAComp(qpl_path_hardware, 1, 2);
+    scagatherer = new ScatterGather();
+
+    // pre-allocate the required intermediate buffers
+    ser_compressed_out = std::make_unique<uint8_t[]>(BUFFER_SIZE);
+    ser_compressed_sizes_out = std::make_unique<uint8_t[]>(BUFFER_SIZE);
+    ser_gather_buffer.resize(BUFFER_SIZE, 0);
+    deser_decompress_out.resize(BUFFER_SIZE, 0);
+    ser_ptrs.reserve(SCHEMA_SIZE);
+    ser_sizes.reserve(SCHEMA_SIZE);
+    deser_ptrs.reserve(SCHEMA_SIZE);
+    deser_sizes_for_scatter.reserve(SCHEMA_SIZE);
+    
+    // Initialize latency measurement arrays with 5 empty vectors each
+    ser_latencies.resize(5);
+    parse_latencies.resize(5);
+}
+
 Ser1de::Ser1de(std::string execution_path) {
+    NUM_BUFFERS = 256;
+    NUM_SCHEMAS = 256;
+    BUFFER_SIZE = NUM_BUFFERS * BUFFER_PAGE_SIZE;
+    SCHEMA_SIZE = NUM_SCHEMAS * SCHEMA_PAGE_SIZE;
     // Initialize IAA with the appropriate path
     if (execution_path == "Hardware") {
         iaa_comp = new IAAComp(qpl_path_hardware, 1, 2);
@@ -112,6 +177,10 @@ Ser1de::Ser1de(std::string execution_path) {
 
 // Default constructor initializes IAA with hardware path
 Ser1de::Ser1de() {
+    NUM_BUFFERS = 256;
+    NUM_SCHEMAS = 256;
+    BUFFER_SIZE = NUM_BUFFERS * BUFFER_PAGE_SIZE;
+    SCHEMA_SIZE = NUM_SCHEMAS * SCHEMA_PAGE_SIZE;
     iaa_comp = new IAAComp(qpl_path_hardware, 1, 2);
     scagatherer = new ScatterGather();
 
@@ -142,7 +211,7 @@ void Ser1de::SerializeToString(google::protobuf::Message& message, std::string* 
     // <------------ GATHER SCHEMA ------>
     message.generate_seperated_schema(ser_ptrs, ser_sizes);
     // <------------ GATHER ------>
-    job_id1 = iaa_comp->compress_non_blocking(reinterpret_cast<uint8_t*>(ser_sizes.data()), ser_sizes.size() * sizeof(size_t), ser_compressed_sizes_out.get(), ser_sizes.size() * sizeof(uint16_t) * 1);
+    job_id1 = iaa_comp->compress_non_blocking(reinterpret_cast<uint8_t*>(ser_sizes.data()), ser_sizes.size() * sizeof(size_t), ser_compressed_sizes_out.get(), ser_sizes.size() * sizeof(uint16_t) * 8);
     scagatherer->GatherWithMemCpy(ser_ptrs, ser_sizes, ser_gather_buffer.data(), &ser_gather_out_size);
     // <------------ COMPRESS ------>
     //iaa_comp->compress_blocking(reinterpret_cast<uint8_t*>(ser_sizes.data()), ser_sizes.size() * sizeof(size_t), ser_compressed_sizes_out.get(), ser_sizes.size() * sizeof(uint16_t), &serComprSizesSize);

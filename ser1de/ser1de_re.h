@@ -10,8 +10,10 @@
 
 class Ser1de_re {
 public:
-    Ser1de_re(std::string execution_path) : execution_path_(execution_path) {}
-    Ser1de_re() : execution_path_("Hardware") {}
+    Ser1de_re(std::string execution_path, size_t num_buffers, size_t num_schemas) : execution_path_(execution_path), NUM_BUFFERS(num_buffers), NUM_SCHEMAS(num_schemas) {}
+    Ser1de_re(size_t num_buffers, size_t num_schemas) : execution_path_("Hardware"), NUM_BUFFERS(num_buffers), NUM_SCHEMAS(num_schemas) {}
+    Ser1de_re(std::string execution_path) : execution_path_(execution_path), NUM_BUFFERS(16), NUM_SCHEMAS(4) {}
+    Ser1de_re() : execution_path_("Hardware"), NUM_BUFFERS(16), NUM_SCHEMAS(4) {}
     ~Ser1de_re() = default;
 
     // API exposed to the user
@@ -27,8 +29,10 @@ public:
 
 private:
     std::string execution_path_;
+    size_t NUM_BUFFERS;
+    size_t NUM_SCHEMAS;
     Ser1de& get_thread_local_ser1de() {
-        thread_local Ser1de instance{execution_path_};
+        thread_local Ser1de instance{execution_path_, NUM_BUFFERS, NUM_SCHEMAS};
         return instance;
     }
 };
