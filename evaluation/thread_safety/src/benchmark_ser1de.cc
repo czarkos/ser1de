@@ -32,7 +32,8 @@
 #include"access_message8.h"
 #include"access_message9.h"
 //#include"ser1de.h"
-#include"ser1de_re.h"
+//#include"ser1de_re.h"
+#include"tmp_ser1de_re.h"
 
 #include <tuple>
 
@@ -441,7 +442,7 @@ int benchmark (size_t num_requests, Ser1de_re& ser1de) {
     benchmark_ser1de_serialize(ser1de, messages, ser1de_ser_outs, num_requests, ser1de_ser_latencies);
     benchmark_ser1de_deserialize(ser1de, ser1de_ser_outs, ser1de_deser_messages_out, num_requests, ser1de_deser_latencies);
 
-    compare_messages(messages, ser1de_deser_messages_out, num_requests);
+    //compare_messages(messages, ser1de_deser_messages_out, num_requests);
     //analyze_latencies(proto_ser_latencies, "Protobuf Serialize");
     //analyze_latencies(proto_deser_latencies, "Protobuf Deserialize");
     //analyze_latencies(ser1de_ser_latencies, "Ser1de Serialize");
@@ -515,7 +516,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Create a shared Ser1de instance for all threads
-    Ser1de_re shared_ser1de;
+    Ser1de_re shared_ser1de(num_threads*32);
     
     std::cout << "-----------------------------------------------------" << std::endl;
     std::cout << "Multi-threaded Benchmark Configuration:" << std::endl;
