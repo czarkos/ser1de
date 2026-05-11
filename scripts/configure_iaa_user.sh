@@ -63,11 +63,11 @@ echo
 #
 # Enable/Disable PRS (not supported in every system).
 #
-lspci -vvv | grep 0cfe | awk '{print $1}' | while IFS= read -r line; do
-    device_address="00:${line}"
-    sudo setpci -s "$device_address" 244.B=1 # Change to 1/0 Enable/Disable
-done
-echo "PRS enabled on all devices!"
+#lspci -vvv | grep 0cfe | awk '{print $1}' | while IFS= read -r line; do
+#    device_address="00:${line}"
+#    sudo setpci -s "$device_address" 244.B=1 # Change to 1/0 Enable/Disable
+#done
+#echo "PRS enabled on all devices!"
 
 #
 # Enable IAA devices, engines, and WQs.
