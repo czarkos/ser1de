@@ -455,16 +455,16 @@ int main() {
 
     // Different RPS ranges for each type
     std::map<BenchmarkType, std::pair<int, int>> rps_ranges = {
-        {PROTO_SERIALIZE, {6500, 9000}},      // 40k-80k requests
-        {PROTO_DESERIALIZE, {3500, 6000}},    // 20k-60k requests
-        {SER1DE_SERIALIZE, {7500, 10000}},    // 60k-100k requests
-        {SER1DE_DESERIALIZE, {5000, 7500}}    // 30k-70k requests
+        {PROTO_SERIALIZE, {10000, 20000}},      // 80k-120k requests
+        {PROTO_DESERIALIZE, {3000, 7000}},    // 20k-60k requests
+        {SER1DE_SERIALIZE, {10000, 24000}},    // 80k-120k requests
+        {SER1DE_DESERIALIZE, {6000, 16000}}    // 30k-70k requests
     };
 
     for (auto type : types) {
         int start_rps = rps_ranges[type].first;
         int end_rps = rps_ranges[type].second;
-        for (int rps = start_rps; rps <= end_rps; rps += 500) {
+        for (int rps = start_rps; rps <= end_rps; rps += 1000) {
             benchmark(rps * 10, type);  // Convert RPS to request count (10 second duration)
         }
     }

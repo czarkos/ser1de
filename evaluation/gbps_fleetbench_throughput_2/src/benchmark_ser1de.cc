@@ -357,6 +357,7 @@ int benchmark(size_t num_requests) {
     }
     
     auto [ser1de_ser_gbps, total_bytes] = benchmark_ser1de_serialize(ser1de, ser1de_ser_outs, messages, num_requests);
+    std::cout << "Total bytes: " << total_bytes << std::endl;
     std::cout << "ser1de_serialize" << "," << num_requests << "," << std::fixed << std::setprecision(4) << ser1de_ser_gbps << std::endl;
 
     double proto_ser_gbps = benchmark_serialize(messages, proto_ser_outs, num_requests, total_bytes);

@@ -4,8 +4,8 @@ import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
 
-protobuf_path = '/home/czarkos/dev/ser1de/protobuf/'
-benchmark_path = '/home/czarkos/dev/ser1de/evaluation/sensitivity/scripts/'
+protobuf_path = '/home/christos/dev/final_results/ser1de/protobuf/'
+benchmark_path = '/home/christos/dev/final_results/ser1de/evaluation/sensitivity/scripts/'
 
 def ser_perf_plot(df, name):
     # Create a pivot table for the plots
@@ -173,10 +173,10 @@ def process_output(res, warmups=1):
     return proto_ser, proto_deser, ser1de_ser, ser1de_deser, gather_out, compress_out
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--widths', metavar='N', type=int, nargs='+', default=[3, 4, 5])
-parser.add_argument('--depths', metavar='N', type=int, nargs='+', default=[3, 4])
+parser.add_argument('--widths', metavar='N', type=int, nargs='+', default=[3, 4, 5, 6])
+parser.add_argument('--depths', metavar='N', type=int, nargs='+', default=[3, 4, 5])
 parser.add_argument('--ratios', metavar='N', type=int, nargs='+', default=[4])
-parser.add_argument('--sets', metavar='N', type=int, nargs='+', default=[1, 2, 3])
+parser.add_argument('--sets', metavar='N', type=int, nargs='+', default=[2, 3])
 
 parser.add_argument("-p", "--plot", action="store_true", help="Generate plots")
 args = parser.parse_args()
@@ -209,7 +209,7 @@ if args.plot:
     if not os.path.exists(plt_dir):
         os.makedirs(plt_dir)
         print("Created" + plt_dir + "directory")
-    data_frame.to_csv(plt_dir + '/dsa_sensitivity.csv', index=False)  # Save without the index
+    data_frame.to_csv(plt_dir + '/sensitivity.csv', index=False)  # Save without the index
     ser_perf_plot(data_frame, plt_dir + '/perf_serialization.png')
     deser_perf_plot(data_frame, plt_dir + '/perf_deserialization.png')
     end2end_plot(data_frame, plt_dir + '/end2end_sensitivity.png')

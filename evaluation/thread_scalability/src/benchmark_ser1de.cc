@@ -206,7 +206,7 @@ int benchmark (size_t num_requests) {
 
     // Initialize the protos
     // std::string s("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz0123456789");
-    std::string s(1<<10, 'a');
+    std::string s(1<<20, 'a');
     for (size_t i = 0; i < num_requests ; i += 26) {
         // Message 0
         google::protobuf::Message* m0_1 = new fleetbench::proto::Message0();
@@ -491,7 +491,7 @@ int main () {
     benchmark(20000);
     std::cerr << "Finished 20000 requests" << std::endl;
     */
-    benchmark(30000);
+    benchmark(20000);
     //benchmark(1000);
-    std::cerr << "Finished 30000 requests" << std::endl;
+    std::cerr << "Finished 20000 requests" << std::endl;
 }

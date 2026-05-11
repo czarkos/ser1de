@@ -25,7 +25,7 @@
 
 #include <tuple>
 
-static constexpr size_t kNofIterations = 1001;
+static constexpr size_t kNofIterations = 10001;
 
 static constexpr size_t warmup = 5;
 
@@ -141,7 +141,8 @@ int benchmark (size_t message_id, size_t setter) {
     std::vector<std::chrono::nanoseconds> proto_serialization_durations, proto_deserialization_durations;
     std::vector<std::chrono::nanoseconds> ser1de_serialization_durations, ser1de_deserialization_durations;
 
-    std::string s("My name is Christos and I am trying to create a respresentative string for the benchmark. I thinkg this is a good example of text that could possibly be used in a real application. It also populates the buffer well.");
+    //std::string s("My name is Christos and I am trying to create a respresentative string for the benchmark. I thinkg this is a good example of text that could possibly be used in a real application. It also populates the buffer well.");
+    std::string s(1<<20, 'a');
     for (size_t i = 0; i < kNofIterations; ++i) {
         switch (message_id) {
             case 0: {

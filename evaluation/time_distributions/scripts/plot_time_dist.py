@@ -5,6 +5,10 @@ import numpy as np
 import argparse
 from pathlib import Path
 
+# Five distinguishable blues (light → dark) for stacked segments
+BLUE_SHADES = ["#c6dbef", "#6baed6", "#3182bd", "#2171b5", "#08519c"]
+
+
 def create_stacked_bar_plot(csv_file, plot_type, output_dir=None):
     """
     Create a stacked bar plot showing the distribution of time spent by operation
@@ -74,7 +78,12 @@ def create_stacked_bar_plot(csv_file, plot_type, output_dir=None):
     print(f"  Creating {plot_type} plot...")
     
     df_sorted = df[df['MessageSize'] <= 1000000].sort_values(by='MessageSize')
-    ax = df_sorted.set_index("MessageSize")[stack_columns].plot(kind='bar', stacked=True, figsize=(12, 8))
+    ax = df_sorted.set_index("MessageSize")[stack_columns].plot(
+        kind='bar',
+        stacked=True,
+        figsize=(12, 8),
+        color=BLUE_SHADES,
+    )
 
     ax.tick_params(axis='both', which='major', labelsize=22)
 

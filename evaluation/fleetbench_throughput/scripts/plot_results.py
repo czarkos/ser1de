@@ -84,7 +84,7 @@ def plot_latencies(df):
     plt.ylabel('Latency (microseconds)', fontsize=22)
     plt.title('50th and 95th Percentile Latency vs RPS', fontsize=26)
     plt.grid(True, linestyle='--', alpha=0.7)
-    plt.xlim(2000, 10500)
+    plt.xlim(2000, 22500)
     plt.ylim(0, 1500)
     plt.tick_params(axis='both', labelsize=22)
     
@@ -96,10 +96,13 @@ def plot_latencies(df):
     
     # Create data type legend inside plot area (lower right)
     plt.legend(plot_lines, type_names.values(),
-              loc='upper right', 
+              loc='upper center', 
+              bbox_to_anchor=(0.5, 1.27),
               fontsize=18, 
-              ncol=1,
+              ncol=2,
+              borderaxespad=0.2,
               frameon=True)
+    #plt.tight_layout(rect=[0, 0, 1, 0.99])
     
     plt.savefig('p50_p95_latency.pdf')
     plt.close()
@@ -118,10 +121,10 @@ def plot_latencies(df):
     plt.ylabel('P99 Latency (microseconds)', fontsize=22)
     plt.title('99th Percentile Latency vs RPS', fontsize=26)
     plt.grid(True, linestyle='--', alpha=0.7)
-    plt.xlim(2000, 10000)
+    plt.xlim(2000, 22500)
     plt.ylim(0, 10000)
     plt.tick_params(axis='both', labelsize=22)
-    plt.legend(loc='upper left', fontsize=22)
+    plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.25), ncol=2, fontsize=18)
     plt.savefig('p99_latency.pdf')
     plt.close()
 # ... existing code ...
