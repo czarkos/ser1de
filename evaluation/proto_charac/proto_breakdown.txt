@@ -1,0 +1,26 @@
+===============================================================
+ Protobuf de/encoding characterization (instrumentation)
+ messages=10010  ops/pass=10001  hw_counters=available
+ (one object per op; first-parse field alloc included)
+===============================================================
+
+[SERIALIZE]  cycles/op by sub-step:
+    size pass  (ByteSizeLong)              :    15608.7
+    encode pass(SerializeWithCachedSizes)  :    56980.2
+    alloc pass (output string resize)      :     1576.1
+
+  ==> serialize coarse split (by cycles/op):
+        encode/decode work        :  97.87 %
+        memory + object setup     :   2.13 %
+RESULT op=serialize encode_decode_pct=97.87 memory_object_pct=2.13
+
+[DESERIALIZE]  cycles/op by parse mode:
+    first-parse(pre-alloc shell, field alloc):   218824.2
+    fresh-heap (New + parse + delete each op) :   304245.6
+    fresh-arena(arena New + parse + reset)   :   304187.5
+
+  ==> deserialize coarse split (by cycles/op):
+        encode/decode work        :  71.92 %
+        memory + object setup     :  28.08 %
+RESULT op=deserialize encode_decode_pct=71.92 memory_object_pct=28.08
+    (arena removes 0.1% of the heap shell overhead)

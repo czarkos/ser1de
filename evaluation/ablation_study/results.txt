@@ -1,0 +1,686 @@
+type,rps,p50,p95,p99
+-----------------------------------------------------
+	Request per Second: 10000 for 10 Seconds
+	Benchmark: Proto Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Serialize:
+            p50            p95            p99
+---------------------------------------------
+             74            346            413
+Proto Serialize,10000,74,346,413
+-----------------------------------------------------
+	Request per Second: 11000 for 10 Seconds
+	Benchmark: Proto Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Serialize:
+            p50            p95            p99
+---------------------------------------------
+             82            363            419
+Proto Serialize,11000,82,363,419
+-----------------------------------------------------
+	Request per Second: 12000 for 10 Seconds
+	Benchmark: Proto Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Serialize:
+            p50            p95            p99
+---------------------------------------------
+            112            366            415
+Proto Serialize,12000,112,366,415
+-----------------------------------------------------
+	Request per Second: 13000 for 10 Seconds
+	Benchmark: Proto Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Serialize:
+            p50            p95            p99
+---------------------------------------------
+            201            384            418
+Proto Serialize,13000,201,384,418
+-----------------------------------------------------
+	Request per Second: 14000 for 10 Seconds
+	Benchmark: Proto Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Serialize:
+            p50            p95            p99
+---------------------------------------------
+            253            409            436
+Proto Serialize,14000,253,409,436
+-----------------------------------------------------
+	Request per Second: 15000 for 10 Seconds
+	Benchmark: Proto Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Serialize:
+            p50            p95            p99
+---------------------------------------------
+            299            459           3415
+Proto Serialize,15000,299,459,3415
+-----------------------------------------------------
+	Request per Second: 16000 for 10 Seconds
+	Benchmark: Proto Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Serialize:
+            p50            p95            p99
+---------------------------------------------
+            329            481            515
+Proto Serialize,16000,329,481,515
+-----------------------------------------------------
+	Request per Second: 17000 for 10 Seconds
+	Benchmark: Proto Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Serialize:
+            p50            p95            p99
+---------------------------------------------
+            362            535           1950
+Proto Serialize,17000,362,535,1950
+-----------------------------------------------------
+	Request per Second: 18000 for 10 Seconds
+	Benchmark: Proto Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Serialize:
+            p50            p95            p99
+---------------------------------------------
+          11969          16380          17085
+Proto Serialize,18000,11969,16380,17085
+-----------------------------------------------------
+	Request per Second: 19000 for 10 Seconds
+	Benchmark: Proto Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Serialize:
+            p50            p95            p99
+---------------------------------------------
+         282786         543641         564024
+Proto Serialize,19000,282786,543641,564024
+-----------------------------------------------------
+	Request per Second: 20000 for 10 Seconds
+	Benchmark: Proto Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Serialize:
+            p50            p95            p99
+---------------------------------------------
+         494462         919372         956546
+Proto Serialize,20000,494462,919372,956546
+-----------------------------------------------------
+	Request per Second: 3000 for 10 Seconds
+	Benchmark: Proto Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Deserialize:
+            p50            p95            p99
+---------------------------------------------
+            123            472            653
+Proto Deserialize,3000,123,472,653
+-----------------------------------------------------
+	Request per Second: 4000 for 10 Seconds
+	Benchmark: Proto Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Deserialize:
+            p50            p95            p99
+---------------------------------------------
+            150            637            721
+Proto Deserialize,4000,150,637,721
+-----------------------------------------------------
+	Request per Second: 5000 for 10 Seconds
+	Benchmark: Proto Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Deserialize:
+            p50            p95            p99
+---------------------------------------------
+            288            774           1923
+Proto Deserialize,5000,288,774,1923
+-----------------------------------------------------
+	Request per Second: 6000 for 10 Seconds
+	Benchmark: Proto Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Deserialize:
+            p50            p95            p99
+---------------------------------------------
+            510           1129           4822
+Proto Deserialize,6000,510,1129,4822
+-----------------------------------------------------
+	Request per Second: 7000 for 10 Seconds
+	Benchmark: Proto Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Proto Deserialize:
+            p50            p95            p99
+---------------------------------------------
+         293854         557100         578147
+Proto Deserialize,7000,293854,557100,578147
+-----------------------------------------------------
+	Request per Second: 10000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+             60            386            468
+Ser1de Serialize,10000,60,386,468
+-----------------------------------------------------
+	Request per Second: 11000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+             64            401            471
+Ser1de Serialize,11000,64,401,471
+-----------------------------------------------------
+	Request per Second: 12000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+             66            405            467
+Ser1de Serialize,12000,66,405,467
+-----------------------------------------------------
+	Request per Second: 13000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+             69            412            467
+Ser1de Serialize,13000,69,412,467
+-----------------------------------------------------
+	Request per Second: 14000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+             75            424            473
+Ser1de Serialize,14000,75,424,473
+-----------------------------------------------------
+	Request per Second: 15000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+             97            423            469
+Ser1de Serialize,15000,97,423,469
+-----------------------------------------------------
+	Request per Second: 16000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+            146            426            468
+Ser1de Serialize,16000,146,426,468
+-----------------------------------------------------
+	Request per Second: 17000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+            195            429            468
+Ser1de Serialize,17000,195,429,468
+-----------------------------------------------------
+	Request per Second: 18000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+            237            437            476
+Ser1de Serialize,18000,237,437,476
+-----------------------------------------------------
+	Request per Second: 19000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+            267            437            473
+Ser1de Serialize,19000,267,437,473
+-----------------------------------------------------
+	Request per Second: 20000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+            291            438            467
+Ser1de Serialize,20000,291,438,467
+-----------------------------------------------------
+	Request per Second: 21000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+            325            446            469
+Ser1de Serialize,21000,325,446,469
+-----------------------------------------------------
+	Request per Second: 22000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+            362            476           1159
+Ser1de Serialize,22000,362,476,1159
+-----------------------------------------------------
+	Request per Second: 23000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+         117006         196456         203456
+Ser1de Serialize,23000,117006,196456,203456
+-----------------------------------------------------
+	Request per Second: 24000 for 10 Seconds
+	Benchmark: Ser1de Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Serialize:
+            p50            p95            p99
+---------------------------------------------
+         342838         622158         650545
+Ser1de Serialize,24000,342838,622158,650545
+-----------------------------------------------------
+	Request per Second: 6000 for 10 Seconds
+	Benchmark: Ser1de Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Deserialize:
+            p50            p95            p99
+---------------------------------------------
+             74            301            420
+Ser1de Deserialize,6000,74,301,420
+-----------------------------------------------------
+	Request per Second: 7000 for 10 Seconds
+	Benchmark: Ser1de Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Deserialize:
+            p50            p95            p99
+---------------------------------------------
+             81            381            484
+Ser1de Deserialize,7000,81,381,484
+-----------------------------------------------------
+	Request per Second: 8000 for 10 Seconds
+	Benchmark: Ser1de Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Deserialize:
+            p50            p95            p99
+---------------------------------------------
+             80            348            426
+Ser1de Deserialize,8000,80,348,426
+-----------------------------------------------------
+	Request per Second: 9000 for 10 Seconds
+	Benchmark: Ser1de Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Deserialize:
+            p50            p95            p99
+---------------------------------------------
+             82            375            528
+Ser1de Deserialize,9000,82,375,528
+-----------------------------------------------------
+	Request per Second: 10000 for 10 Seconds
+	Benchmark: Ser1de Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Deserialize:
+            p50            p95            p99
+---------------------------------------------
+             86            377            916
+Ser1de Deserialize,10000,86,377,916
+-----------------------------------------------------
+	Request per Second: 11000 for 10 Seconds
+	Benchmark: Ser1de Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Deserialize:
+            p50            p95            p99
+---------------------------------------------
+            109            384           1090
+Ser1de Deserialize,11000,109,384,1090
+-----------------------------------------------------
+	Request per Second: 12000 for 10 Seconds
+	Benchmark: Ser1de Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Deserialize:
+            p50            p95            p99
+---------------------------------------------
+            192            394           2040
+Ser1de Deserialize,12000,192,394,2040
+-----------------------------------------------------
+	Request per Second: 13000 for 10 Seconds
+	Benchmark: Ser1de Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Deserialize:
+            p50            p95            p99
+---------------------------------------------
+            274            425           3084
+Ser1de Deserialize,13000,274,425,3084
+-----------------------------------------------------
+	Request per Second: 14000 for 10 Seconds
+	Benchmark: Ser1de Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Deserialize:
+            p50            p95            p99
+---------------------------------------------
+            321            462            552
+Ser1de Deserialize,14000,321,462,552
+-----------------------------------------------------
+	Request per Second: 15000 for 10 Seconds
+	Benchmark: Ser1de Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Deserialize:
+            p50            p95            p99
+---------------------------------------------
+            374           2504           5143
+Ser1de Deserialize,15000,374,2504,5143
+-----------------------------------------------------
+	Request per Second: 16000 for 10 Seconds
+	Benchmark: Ser1de Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Ser1de Deserialize:
+            p50            p95            p99
+---------------------------------------------
+          67296         121096         123876
+Ser1de Deserialize,16000,67296,121096,123876
+-----------------------------------------------------
+	Request per Second: 10000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+             68            406            481
+Serial_Ser1de-HW Serialize,10000,68,406,481
+-----------------------------------------------------
+	Request per Second: 11000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+             70            417            482
+Serial_Ser1de-HW Serialize,11000,70,417,482
+-----------------------------------------------------
+	Request per Second: 12000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+             73            423            482
+Serial_Ser1de-HW Serialize,12000,73,423,482
+-----------------------------------------------------
+	Request per Second: 13000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+             79            431            485
+Serial_Ser1de-HW Serialize,13000,79,431,485
+-----------------------------------------------------
+	Request per Second: 14000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+            104            434            674
+Serial_Ser1de-HW Serialize,14000,104,434,674
+-----------------------------------------------------
+	Request per Second: 15000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+            171            440           1926
+Serial_Ser1de-HW Serialize,15000,171,440,1926
+-----------------------------------------------------
+	Request per Second: 16000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+            221            444           2439
+Serial_Ser1de-HW Serialize,16000,221,444,2439
+-----------------------------------------------------
+	Request per Second: 17000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+            271            449           3064
+Serial_Ser1de-HW Serialize,17000,271,449,3064
+-----------------------------------------------------
+	Request per Second: 18000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+            336           1014           5295
+Serial_Ser1de-HW Serialize,18000,336,1014,5295
+-----------------------------------------------------
+	Request per Second: 19000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+            361           1463           4812
+Serial_Ser1de-HW Serialize,19000,361,1463,4812
+-----------------------------------------------------
+	Request per Second: 20000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+            395           3911           5270
+Serial_Ser1de-HW Serialize,20000,395,3911,5270
+-----------------------------------------------------
+	Request per Second: 21000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+         182231         322127         334826
+Serial_Ser1de-HW Serialize,21000,182231,322127,334826
+-----------------------------------------------------
+	Request per Second: 22000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+         365640         670828         695703
+Serial_Ser1de-HW Serialize,22000,365640,670828,695703
+-----------------------------------------------------
+	Request per Second: 23000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+         723458        1345456        1404639
+Serial_Ser1de-HW Serialize,23000,723458,1345456,1404639
+-----------------------------------------------------
+	Request per Second: 24000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Serialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Serialize:
+            p50            p95            p99
+---------------------------------------------
+         992389        1858556        1933211
+Serial_Ser1de-HW Serialize,24000,992389,1858556,1933211
+-----------------------------------------------------
+	Request per Second: 6000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Deserialize:
+            p50            p95            p99
+---------------------------------------------
+             79            388            503
+Serial_Ser1de-HW Deserialize,6000,79,388,503
+-----------------------------------------------------
+	Request per Second: 7000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Deserialize:
+            p50            p95            p99
+---------------------------------------------
+             83            412            504
+Serial_Ser1de-HW Deserialize,7000,83,412,504
+-----------------------------------------------------
+	Request per Second: 8000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Deserialize:
+            p50            p95            p99
+---------------------------------------------
+             84            433            508
+Serial_Ser1de-HW Deserialize,8000,84,433,508
+-----------------------------------------------------
+	Request per Second: 9000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Deserialize:
+            p50            p95            p99
+---------------------------------------------
+             91            452            522
+Serial_Ser1de-HW Deserialize,9000,91,452,522
+-----------------------------------------------------
+	Request per Second: 10000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Deserialize:
+            p50            p95            p99
+---------------------------------------------
+            129            461           1073
+Serial_Ser1de-HW Deserialize,10000,129,461,1073
+-----------------------------------------------------
+	Request per Second: 11000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Deserialize:
+            p50            p95            p99
+---------------------------------------------
+            256            476           2382
+Serial_Ser1de-HW Deserialize,11000,256,476,2382
+-----------------------------------------------------
+	Request per Second: 12000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Deserialize:
+            p50            p95            p99
+---------------------------------------------
+            344            510           3597
+Serial_Ser1de-HW Deserialize,12000,344,510,3597
+-----------------------------------------------------
+	Request per Second: 13000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Deserialize:
+            p50            p95            p99
+---------------------------------------------
+            407            596           4631
+Serial_Ser1de-HW Deserialize,13000,407,596,4631
+-----------------------------------------------------
+	Request per Second: 14000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Deserialize:
+            p50            p95            p99
+---------------------------------------------
+            484           4667           5585
+Serial_Ser1de-HW Deserialize,14000,484,4667,5585
+-----------------------------------------------------
+	Request per Second: 15000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Deserialize:
+            p50            p95            p99
+---------------------------------------------
+         262476         488611         511929
+Serial_Ser1de-HW Deserialize,15000,262476,488611,511929
+-----------------------------------------------------
+	Request per Second: 16000 for 10 Seconds
+	Benchmark: Serial_Ser1de-HW Deserialize
+-----------------------------------------------------
+
+Tail Latencies (microseconds) - Serial_Ser1de-HW Deserialize:
+            p50            p95            p99
+---------------------------------------------
+         607917        1158473        1205238
+Serial_Ser1de-HW Deserialize,16000,607917,1158473,1205238
+-----------------------------------------------------
+	Request per Second: 10000 for 10 Seconds
+	Benchmark: Serial_Ser1de-SW Serialize
+-----------------------------------------------------
+Compression failed with error code: 229

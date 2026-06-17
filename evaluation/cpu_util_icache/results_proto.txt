@@ -1,0 +1,30 @@
+===============================================================
+ backend=proto  corpus=2600 messages  total_ops/phase=200000
+ hardware counters: available
+===============================================================
+
+[proto / serialize]  ops=200000
+  CPU utilization:
+    wall_time      : 8355.660 ms
+    cpu_time       : 8345.849 ms  (CPUs utilized 0.999)
+    cpu_time/op    : 41.7292 us
+    instructions   : 17596836672
+    cycles         : 16617612268  (83088.1 cycles/op)
+    IPC            : 1.059
+  Instruction cache:
+    L1I read-miss  : 314380242  (1571.9012 /op)
+    iTLB read-miss : 922110  (4.6105 /op)
+RESULT backend=proto phase=serialize ops=200000 wall_ms=8355.660 cpu_ms=8345.849 cpu_us_per_op=41.7292 cpus=0.999 instructions=17596836672 cycles=16617612268 ipc=1.059 cyc_per_op=83088.061 l1i_miss=314380242 l1i_miss_per_op=1571.9012 itlb_miss=922110 itlb_miss_per_op=4.6105
+
+[proto / deserialize]  ops=200000
+  CPU utilization:
+    wall_time      : 21615.312 ms
+    cpu_time       : 21591.953 ms  (CPUs utilized 0.999)
+    cpu_time/op    : 107.9598 us
+    instructions   : 94509326165
+    cycles         : 43098440568  (215492.2 cycles/op)
+    IPC            : 2.193
+  Instruction cache:
+    L1I read-miss  : 1074606398  (5373.0320 /op)
+    iTLB read-miss : 1113641  (5.5682 /op)
+RESULT backend=proto phase=deserialize ops=200000 wall_ms=21615.312 cpu_ms=21591.953 cpu_us_per_op=107.9598 cpus=0.999 instructions=94509326165 cycles=43098440568 ipc=2.193 cyc_per_op=215492.203 l1i_miss=1074606398 l1i_miss_per_op=5373.0320 itlb_miss=1113641 itlb_miss_per_op=5.5682

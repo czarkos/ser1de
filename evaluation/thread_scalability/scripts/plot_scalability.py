@@ -152,7 +152,7 @@ def create_plots(core_counts, aggregated_results, output_dir):
 
 def main():
     # Define the core counts to test
-    core_counts = [1, 2, 4, 8, 12, 16, 20, 24, 28, 32]  # Adjust based on your system
+    core_counts = [1, 2, 4, 8, 12, 16, 20, 24, 28, 32, 64]  # Adjust based on your system
     
     # Output directory for results and plots
     output_dir = 'parallel_benchmark_results'

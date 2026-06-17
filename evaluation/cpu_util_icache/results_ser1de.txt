@@ -1,0 +1,31 @@
+===============================================================
+ backend=ser1de  corpus=2600 messages  total_ops/phase=200000
+ hardware counters: available
+===============================================================
+ser1de round-trip check: ALL CORRECT
+
+[ser1de / serialize]  ops=200000
+  CPU utilization:
+    wall_time      : 8246.593 ms
+    cpu_time       : 8237.480 ms  (CPUs utilized 0.999)
+    cpu_time/op    : 41.1874 us
+    instructions   : 44111952167
+    cycles         : 15430735178  (77153.7 cycles/op)
+    IPC            : 2.859
+  Instruction cache:
+    L1I read-miss  : 111045471  (555.2274 /op)
+    iTLB read-miss : 550049  (2.7502 /op)
+RESULT backend=ser1de phase=serialize ops=200000 wall_ms=8246.593 cpu_ms=8237.480 cpu_us_per_op=41.1874 cpus=0.999 instructions=44111952167 cycles=15430735178 ipc=2.859 cyc_per_op=77153.676 l1i_miss=111045471 l1i_miss_per_op=555.2274 itlb_miss=550049 itlb_miss_per_op=2.7502
+
+[ser1de / deserialize]  ops=200000
+  CPU utilization:
+    wall_time      : 7083.054 ms
+    cpu_time       : 7074.656 ms  (CPUs utilized 0.999)
+    cpu_time/op    : 35.3733 us
+    instructions   : 19314662438
+    cycles         : 14092101923  (70460.5 cycles/op)
+    IPC            : 1.371
+  Instruction cache:
+    L1I read-miss  : 238858051  (1194.2903 /op)
+    iTLB read-miss : 16612283  (83.0614 /op)
+RESULT backend=ser1de phase=deserialize ops=200000 wall_ms=7083.054 cpu_ms=7074.656 cpu_us_per_op=35.3733 cpus=0.999 instructions=19314662438 cycles=14092101923 ipc=1.371 cyc_per_op=70460.510 l1i_miss=238858051 l1i_miss_per_op=1194.2903 itlb_miss=16612283 itlb_miss_per_op=83.0614

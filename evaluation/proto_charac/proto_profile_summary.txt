@@ -1,0 +1,76 @@
+========================================================================
+ SERIALIZE  (samples cover 99.9% of profile)
+========================================================================
+    codec_transform :  14.35% of profile  <== PURE de/encoding
+    buffer_mgmt     :  41.57% of profile
+    allocation      :  16.99% of profile
+    object_field    :  17.59% of profile
+    other           :   9.35% of profile
+      (of which string UTF-8 validation: 5.97% of profile; codec without UTF-8 = 8.38%)
+    --> PURE de/encoding = 15.9% of CLASSIFIED work (9.3% excluding UTF-8 validation)
+    --> wire_path (Ser1de replaces) = 72.0% of profile  (incl. 5.7% unresolved-addr heuristic)
+    --> populate_object (Ser1de still pays)  = 24.4% of profile  (alloc + non-wire object)
+    --> remaining other                      = 3.6% of profile
+    top unclassified symbols (tune regexes in this script):
+          5.71%  0xffffffffaba01320
+          0.52%  google::protobuf::internal::TaggedStringPtr::as_int() const
+          0.29%  google::protobuf::internal::TaggedStringPtr::GetIfAllocated[abi:cxx11]() const
+          0.29%  absl::lts_20240116::string_view::string_view(char const*, unsigned long)
+          0.22%  google::protobuf::internal::ArenaStringPtr::IsDefault() const
+          0.22%  absl::lts_20240116::log_internal::GetReferenceableValue(int)
+          0.15%  std::enable_if<std::is_unsigned<unsigned long>::value, int>::type absl::lts...
+          0.15%  google::protobuf::internal::TaggedStringPtr::assert_aligned(void const*)
+          0.15%  absl::lts_20240116::string_view::size() const
+          0.15%  absl::lts_20240116::log_internal::Check_GEImpl[abi:cxx11](int, int, char co...
+
+========================================================================
+ DESERIALIZE  (samples cover 102.5% of profile)
+========================================================================
+    codec_transform :  11.79% of profile  <== PURE de/encoding
+    buffer_mgmt     :  47.33% of profile
+    allocation      :  18.21% of profile
+    object_field    :  14.74% of profile
+    other           :  10.41% of profile
+      (of which string UTF-8 validation: 3.16% of profile; codec without UTF-8 = 8.63%)
+    --> PURE de/encoding = 12.8% of CLASSIFIED work (9.4% excluding UTF-8 validation)
+    --> wire_path (Ser1de replaces) = 70.9% of profile  (incl. 5.2% unresolved-addr heuristic)
+    --> populate_object (Ser1de still pays)  = 24.2% of profile  (alloc + non-wire object)
+    --> remaining other                      = 4.9% of profile
+    top unclassified symbols (tune regexes in this script):
+          5.31%  0xffffffffaba01320
+          0.54%  google::protobuf::internal::TaggedStringPtr::as_int() const
+          0.28%  absl::lts_20240116::log_internal::GetReferenceableValue(int)
+          0.24%  std::enable_if<std::is_unsigned<unsigned int>::value, int>::type absl::lts_...
+          0.24%  google::protobuf::internal::TaggedStringPtr::assert_aligned(void const*)
+          0.23%  std::operator&(std::memory_order, std::__memory_order_modifier)
+          0.23%  __popcountdi2
+          0.22%  google::protobuf::internal::TaggedStringPtr::GetIfAllocated[abi:cxx11]() const
+          0.17%  int std::__exchange<int, int&>(int&, int&)
+          0.16%  int const& std::min<int>(int const&, int const&)
+
+========================================================================
+ SUMMARY: bucket shares (% of sampled profile; columns sum to ~100%)
+========================================================================
+  operation         codec   buffer    alloc   object    other   codec excl utf8
+  ----------------------------------------------------------------------
+  serialize         14.4%    41.6%    17.0%    17.6%     9.4%             8.4%
+  deserialize       11.5%    46.2%    17.8%    14.4%    10.2%             8.4%
+
+  Five buckets sum to 100% of the sampled profile above.
+  'codec excl utf8' is a subset of 'codec' (not an extra bucket).
+  Per-operation detail above also shows '% of CLASSIFIED work'
+  (codec+buffer+alloc+object only, excluding 'other').
+
+========================================================================
+ SUMMARY: wire_path vs populate_object (Ser1de comparison proxy)
+========================================================================
+  operation        wire_path    populate     other
+  --------------------------------------------------
+  serialize            72.0%       24.4%      3.6%
+  deserialize          70.9%       24.2%      4.9%
+
+  wire_path = codec + buffer + wire parse/serialize dispatch
+  (TcParser, _InternalParse/_InternalSerialize, ByteSizeLong, ...).
+  Includes unresolved [unknown] addresses (likely wire memcpy).
+  populate = allocation + object_field not in wire_path.
+  Ser1de replaces wire_path with decompress + gather/scatter + header.
